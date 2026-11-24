@@ -1,0 +1,18 @@
+{
+  "name": "STAMP — Media passport",
+  "short_name": "STAMP",
+  "description": "A passport-style diary for films, series, books, manga, games and albums.",
+  "id": "/app",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F1E8",
+  "theme_color": "#F5F1E8",
+  "categories": ["entertainment", "lifestyle", "books"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
