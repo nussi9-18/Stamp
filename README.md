@@ -24,7 +24,7 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 
 | Variable | What it does |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Accounts (email code / magic link, Apple, Google), Postgres with Row Level Security, sync between devices |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | Accounts (email code / magic link, Apple, Google), Postgres with Row Level Security, sync between devices |
 | `ANTHROPIC_API_KEY` | Server-only. Powers `/api/archivist` and `/api/diplomat`. It never reaches the browser |
 | `ANTHROPIC_MODEL` | Optional. Defaults to `claude-opus-5-5` |
 | `ANTHROPIC_EFFORT` | Optional: `low`, `medium` (the default) or `high`. Use `low` for faster answers |
@@ -42,12 +42,18 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
    ```
    You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), `20261125000100_api_grants.sql` (Data API access, needed when "Grant API access to new tables automatically" was left off), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
 2. **Authentication → Providers**: enable **Email** with "Confirm email", and set the OTP length to 6. To enable **Apple** and **Google**, add each provider's client ID and secret.
-3. **Authentication → Email templates → Magic link**: include **both** the code and the link, so one email serves the 6-digit code and the "Email me a link instead" path:
+3. **Authentication → Emails → Magic link or OTP**: include **both** the code and the link, so one email serves the 6-digit code and the "Email me a link instead" path. Supabase only lets you edit templates once custom SMTP is set up (**Emails → SMTP Settings**, e.g. Resend); the built-in sender also only delivers to your organization's members, so real users need custom SMTP anyway. Until then the default email carries the link only, and signing in by link works.
    ```html
    <h2>Your STAMP code: {{ .Token }}</h2>
    <p>Or open your passport: <a href="{{ .ConfirmationURL }}">sign in to STAMP</a></p>
    ```
 4. **Authentication → URL configuration**: set the Site URL to your domain, and add `https://<your-domain>/app` (and `http://localhost:3000/app`) to the redirect URLs.
+
+### Deploying on Vercel
+
+- Import the GitHub repo into Vercel; every push to `main` deploys to production.
+- Link Supabase from **Supabase → Project Settings → Integrations → Vercel** ("Link Existing Supabase Account", scoped to this project). It writes `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (plus server-only Postgres and secret keys the app doesn't use) to the Vercel project.
+- Variables apply from the next deployment, so redeploy once after linking.
 
 ### What the schema does
 
