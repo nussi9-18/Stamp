@@ -69,8 +69,8 @@ export default function Home() {
               <p>Stars, moods and buttons are sized for thumbs and fingers, in portrait or landscape.</p>
             </div>
             <div className="note">
-              <h3>Nocturne mode</h3>
-              <p>A dark theme for watching in the cinema, with nothing bright enough to bother the row behind you.</p>
+              <h3>Two looks</h3>
+              <p>Modern and calm, or Retro with VHS nights and real buttons. Each in light and dark.</p>
             </div>
           </div>
         </div>

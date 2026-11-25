@@ -12,6 +12,7 @@ import { useMyNow } from '../Now';
 import { Poster } from '../../brand/Poster';
 import { ItemStamp, placeLabel } from '../../brand/Stamp';
 import { Avatar } from '../../ui/bits';
+import { PageTitle } from '../PageTitle';
 
 type Filter = 'all' | 'reviews' | 'five' | 'heat';
 
@@ -60,12 +61,7 @@ export function FeedScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          FRIENDS’ <em>dispatches</em>
-        </h1>
-        <p className="subtitle page-sub">What the people you follow stamped this week.</p>
-      </header>
+      <PageTitle retro={<>FRIENDS’ <em>dispatches</em></>} modern="Friends" sub="What the people you follow stamped this week." />
 
       {FEED.some((d) => followed(d.p)) ? <p className="label sample-note">Sample dispatches — these citizens are fictional until real friends join.</p> : null}
 

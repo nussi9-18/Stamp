@@ -4,6 +4,7 @@ import { closeSheet, getItem, useStore } from '@/lib/store/store';
 import { PEOPLE_BY_ID } from '@/lib/catalog';
 import { Sheet } from '../../ui/Sheet';
 import { RecordView } from '../RecordView';
+import { LookSheet, leaveLookSheet } from '../LookPicker';
 import { AddOwnSheet, CanonPickerSheet, CanonSlotSheet, ManualSheet, PassportCodeSheet, PersonSheet, SettingsSheet } from './Sheets';
 
 export function SheetHost() {
@@ -56,6 +57,12 @@ export function SheetHost() {
       return (
         <Sheet key={key} title="Add it yourself" onClose={closeSheet}>
           <AddOwnSheet initial={spec} />
+        </Sheet>
+      );
+    case 'look':
+      return (
+        <Sheet key={key} title="Your look" onClose={() => leaveLookSheet(spec.next)}>
+          <LookSheet next={spec.next} />
         </Sheet>
       );
     case 'passport-code':

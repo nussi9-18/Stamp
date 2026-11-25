@@ -8,6 +8,7 @@ import { DEFAULT_SHIELD } from '../shield';
 import { supabase } from '../supabase/client';
 import type { Item, Mood, Place, Rating, Shield, Theme } from '../types';
 import {
+  applyLook,
   applyTheme,
   emptyData,
   getState,
@@ -404,6 +405,7 @@ export async function syncNow(): Promise<void> {
         merged.sync = { ...cur.sync, lastPullAt: maxSynced(r, cur.sync.lastPullAt) };
         replaceData(merged);
         if (merged.passport) applyTheme(merged.passport.theme);
+        if (merged.prefs.look) applyLook(merged.prefs.look);
         const pushedAt = await push(merged);
         const after = getState().data;
         if (after && after.userId === d0.userId) {

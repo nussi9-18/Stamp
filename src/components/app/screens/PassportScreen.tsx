@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatAvg, formatDate, formatHours, initials, pad2 } from '@/lib/format';
 import { presetName } from '@/lib/shield';
-import { clearLanding, getItem, liveStamps, openSheet, requestSearchFocus, setPref, useStore } from '@/lib/store/store';
+import { clearLanding, getItem, liveStamps, openSheet, requestSearchFocus, setPref, useLook, useStore } from '@/lib/store/store';
 import { beginSaveAccount } from '@/lib/auth/session';
 import { Icon } from '../../brand/Icon';
 import { MRZ } from '../../brand/MRZ';
@@ -14,6 +14,7 @@ import { Seal } from '../../brand/Seal';
 import { ItemStamp } from '../../brand/Stamp';
 import { DispatchSoon } from '../DispatchSoon';
 import { NowCard } from '../Now';
+import { PageTitle } from '../PageTitle';
 
 const PER_PAGE = 12;
 
@@ -29,12 +30,7 @@ export function PassportScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          MY <em>passport</em>
-        </h1>
-        <p className="subtitle page-sub">Every film, series, book, game or album you finish gets a stamp.</p>
-      </header>
+      <PageTitle retro={<>MY <em>passport</em></>} modern="Passport" sub="Every film, series, book, game or album you finish gets a stamp." />
 
       <NowCard />
 
@@ -135,7 +131,7 @@ export function HolderCard({ stamps }: { stamps: ReturnType<typeof liveStamps> }
         </span>
       </div>
       <Link href="/app/wrapped" className="wrapped-bar">
-        <span className="display">{year} WRAPPED</span>
+        <span className="display">{year} Wrapped</span>
         <span className="mono">Open</span>
       </Link>
       <div className="holder-btns">
@@ -192,10 +188,19 @@ function CanonPanel() {
 function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
   const router = useRouter();
   const landing = useStore((s) => s.landing);
+  const look = useLook();
   const [page, setPage] = useState(0);
+  const [turn, setTurn] = useState<{ dir: 'next' | 'prev'; key: number } | null>(null);
+  const swipe = useRef<{ x: number; y: number; dragged: boolean } | null>(null);
   const pages = Math.max(1, Math.ceil(stamps.length / PER_PAGE));
   const cur = Math.min(page, pages - 1);
   const slice = stamps.slice(cur * PER_PAGE, cur * PER_PAGE + PER_PAGE);
+
+  const goTo = (to: number) => {
+    if (to < 0 || to >= pages || to === cur) return;
+    setTurn({ dir: to > cur ? 'next' : 'prev', key: Date.now() });
+    setPage(to);
+  };
 
   useEffect(() => {
     if (!landing) return;
@@ -209,7 +214,7 @@ function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
     <section className="panel" aria-labelledby="visa-h">
       <div className="panel-head">
         <h2 className="h2" id="visa-h">
-          Visa pages
+          {look === 'modern' ? 'Stamps' : 'Visa pages'}
         </h2>
         <span className="label">
           {stamps.length} {stamps.length === 1 ? 'stamp' : 'stamps'}
@@ -230,8 +235,36 @@ function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
           </button>
         </div>
       ) : (
-        <div className="visa-wrap">
-          <ul className="visa-grid ruled" style={{ listStyle: 'none', margin: 0 }}>
+        <div
+          className="visa-wrap"
+          style={{ touchAction: 'pan-y' }}
+          onPointerDown={(e) => {
+            swipe.current = { x: e.clientX, y: e.clientY, dragged: false };
+          }}
+          onPointerUp={(e) => {
+            const s = swipe.current;
+            if (!s) return;
+            const dx = e.clientX - s.x;
+            const dy = e.clientY - s.y;
+            // Swipe sideways to turn the page.
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+              s.dragged = true;
+              goTo(dx < 0 ? cur + 1 : cur - 1);
+            }
+          }}
+          onClickCapture={(e) => {
+            if (swipe.current?.dragged) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+            swipe.current = null;
+          }}
+        >
+          <ul
+            key={turn?.key ?? 0}
+            className={`visa-grid ruled${turn ? ` turn-${turn.dir}` : ''}`}
+            style={{ listStyle: 'none', margin: 0 }}
+          >
             {slice.map((s) => {
               const item = getItem(s.itemId);
               if (!item) return null;
@@ -252,7 +285,7 @@ function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
       )}
       <div className="visa-foot">
         {pages > 1 ? (
-          <button type="button" className="icon-btn" aria-label="Previous page" disabled={cur === 0} onClick={() => setPage(cur - 1)}>
+          <button type="button" className="icon-btn" aria-label="Previous page" disabled={cur === 0} onClick={() => goTo(cur - 1)}>
             <Icon name="chevron-left" />
           </button>
         ) : null}
@@ -260,7 +293,7 @@ function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
           Page {pad2(cur + 1)} / {pad2(pages)}
         </span>
         {pages > 1 ? (
-          <button type="button" className="icon-btn" aria-label="Next page" disabled={cur >= pages - 1} onClick={() => setPage(cur + 1)}>
+          <button type="button" className="icon-btn" aria-label="Next page" disabled={cur >= pages - 1} onClick={() => goTo(cur + 1)}>
             <Icon name="chevron-right" />
           </button>
         ) : null}

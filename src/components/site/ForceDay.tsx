@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 export function ForceDay() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'day');
+    document.documentElement.removeAttribute('data-look');
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#F5F1E8');
   }, []);
   return null;

@@ -1,0 +1,1422 @@
+/* ==========================================================================
+   RETRO — an 80s horror-movie night: VHS tapes, screen-printed paper,
+   a red balloon and a yellow raincoat. Everything is a physical object:
+   keys press down, segmented controls are VCR piano keys, stars are punched
+   into a ticket, toasts are Dymo labels.
+   Light = printed matter. Dark = a VHS tape on a CRT.
+   ========================================================================== */
+
+:root[data-look='retro'] {
+  --parch: #efe5cf;
+  --ivory: #f8f1e1;
+  --rule: #dbcba8;
+  --rule2: #bfab84;
+  --ink: #1c1712;
+  --ink2: #4a3f35;
+  --ink3: #6a5c4e;
+  --rose: #c3272b;
+  --rose-d: #a31e22;
+  --pink: #f2c23a;
+  --on-pink: #1c1712;
+  --pink-bg: #f5ddcb;
+  --sky: #4f8a86;
+  --sky-d: #2e6461;
+  --brass: #b8894a;
+  --danger: #a31e22;
+  --clear: #4f8a3b;
+  --mild: #e0a82e;
+  --strong: #d06a2b;
+  --peak: #c3272b;
+  --on-rose: #fff6e3;
+  --ink-home: #1c1712;
+  --ink-out: #c3272b;
+  --ink-event: #2e6461;
+  --stamp-blend: multiply;
+  --grain-opacity: 0.45;
+  --grain-blend: multiply;
+  --meta: #efe5cf;
+  --key: #f8f1e1;
+  --key-hover: #fff9ec;
+  --key-lip: #1c1712;
+  --key-pri: #1c1712;
+  --key-pri-ink: #f8f1e1;
+  --key-pri-lip: #000000;
+  --slot: #2a221b;
+  --slot-ink: #e8dcc0;
+  --ticket: #f3e7c9;
+  --ticket-ink: #9a876b;
+  --ticket-hole: #1c1712;
+  --tape: rgba(240, 196, 70, 0.55);
+  --manila: #e7d6ae;
+  --tab-bg: #1b1612;
+  --tab-fg: #f3e9d2;
+  --tab-dim: #a9997f;
+  --card-bd: 2px solid var(--ink);
+  --card-shadow: 3px 3px 0 var(--ink);
+  --field: #fbf6ea;
+  --f-osd: var(--font-vt323), 'VT323', ui-monospace, monospace;
+  --f-hand: var(--font-marker), 'Permanent Marker', 'Comic Sans MS', cursive;
+  color-scheme: light;
+}
+
+:root[data-look='retro'][data-theme='night'] {
+  --parch: #14110e;
+  --ivory: #1f1a15;
+  --rule: #2f2821;
+  --rule2: #4a4034;
+  --ink: #efe4cc;
+  --ink2: #cdbfa3;
+  --ink3: #a6977d;
+  --rose: #e5483f;
+  --rose-d: #ff7b6c;
+  --pink: #f4c542;
+  --on-pink: #17120d;
+  --pink-bg: #2e1915;
+  --sky: #5fa8a3;
+  --sky-d: #86c9c3;
+  --danger: #ff7b6c;
+  --clear: #7cbf63;
+  --mild: #f4c542;
+  --strong: #f08a3e;
+  --peak: #e5483f;
+  --on-rose: #17120d;
+  --ink-home: #efe4cc;
+  --ink-out: #ff6a5c;
+  --ink-event: #7cc4be;
+  --stamp-blend: screen;
+  --grain-opacity: 0.16;
+  --grain-blend: screen;
+  --meta: #0b0908;
+  --key: #2b241d;
+  --key-hover: #352d25;
+  --key-lip: #050403;
+  --key-pri: #efe4cc;
+  --key-pri-ink: #17120d;
+  --key-pri-lip: #8c7d63;
+  --slot: #050403;
+  --slot-ink: #8c7d63;
+  --ticket: #eadcbb;
+  --ticket-ink: #8e7c62;
+  --ticket-hole: #17120d;
+  --tape: rgba(239, 228, 204, 0.2);
+  --manila: #0f0c0a;
+  --tab-bg: #0b0908;
+  --tab-fg: #efe4cc;
+  --tab-dim: #8f826c;
+  --card-bd: 1px solid var(--rule2);
+  --card-shadow: 3px 3px 0 #000;
+  --field: #0e0b09;
+  color-scheme: dark;
+}
+
+/* Objects that stay light (the login envelope). */
+[data-look='retro'] .force-day {
+  --parch: #efe5cf;
+  --ivory: #f8f1e1;
+  --rule: #dbcba8;
+  --rule2: #bfab84;
+  --ink: #1c1712;
+  --ink2: #4a3f35;
+  --ink3: #6a5c4e;
+  --rose-d: #a31e22;
+  --key: #f8f1e1;
+  --key-hover: #fff9ec;
+  --key-lip: #1c1712;
+  --key-pri: #1c1712;
+  --key-pri-ink: #f8f1e1;
+  --key-pri-lip: #000000;
+  color-scheme: light;
+}
+
+/* CRT: scanlines and a soft vignette over the dark look. */
+[data-look='retro'][data-theme='night'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9001;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────── */
+
+/* Screen-print misregistration on big titles. */
+[data-look='retro'] :is(.page-title, .record-title, .topbar-brand .display, .moment-caption) {
+  text-shadow: 3px 2px 0 color-mix(in srgb, var(--rose) 38%, transparent);
+}
+
+[data-look='retro'] .page-title em {
+  color: var(--rose-d);
+  text-shadow: none;
+}
+
+/* CRT colour fringing in the dark. */
+[data-look='retro'][data-theme='night'] :is(.page-title, .record-title, .topbar-brand .display, .moment-caption) {
+  text-shadow: 2px 0 0 rgba(229, 72, 63, 0.6), -2px 0 0 rgba(95, 168, 163, 0.5);
+}
+
+[data-look='retro'][data-theme='night'] .page-title em {
+  color: var(--pink);
+}
+
+/* On a screen, small labels become VHS on-screen display text. */
+[data-look='retro'][data-theme='night'] :is(.label, .mono) {
+  font-family: var(--f-osd);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  line-height: 1.15;
+}
+
+[data-look='retro'][data-theme='night'] .btn-link {
+  font-family: var(--f-osd);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+/* ── Keys ─────────────────────────────────────────────────────────────── */
+
+[data-look='retro'] :is(.btn, .chip, .icon-btn, .preset, .radio-card) {
+  transition:
+    transform 70ms ease-out,
+    box-shadow 70ms ease-out,
+    background-color 140ms,
+    color 140ms;
+}
+
+[data-look='retro'] .btn {
+  border: 2px solid var(--key-lip);
+  border-radius: 7px;
+  background: var(--key);
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--key-lip), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+[data-look='retro'][data-theme='night'] .btn {
+  box-shadow: 0 4px 0 var(--key-lip), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+[data-look='retro'] .btn:not(:disabled):hover {
+  background: var(--key-hover);
+  color: var(--ink);
+}
+
+[data-look='retro'] .btn:not(:disabled):active,
+[data-look='retro'] .btn[aria-pressed='true'] {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--key-lip), inset 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* A latched key (Follow, wishlist…) stays down and turns raincoat yellow. */
+[data-look='retro'] .btn[aria-pressed='true'],
+[data-look='retro'] .btn[aria-pressed='true']:not(:disabled):hover {
+  background: var(--pink);
+  color: var(--on-pink);
+}
+
+[data-look='retro'] .btn-pri {
+  border-color: var(--key-pri-lip);
+  background: var(--key-pri);
+  color: var(--key-pri-ink);
+  box-shadow: 0 4px 0 var(--key-pri-lip), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+[data-look='retro'] .btn-pri:not(:disabled):hover {
+  background: var(--key-pri);
+  color: var(--key-pri-ink);
+  filter: brightness(1.15);
+}
+
+[data-look='retro'] .btn-pri:not(:disabled):active {
+  box-shadow: 0 1px 0 var(--key-pri-lip), inset 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+[data-look='retro'] .btn-rose,
+[data-look='retro'] .btn-rose:not(:disabled):hover {
+  background: var(--rose);
+  color: var(--on-rose);
+}
+
+[data-look='retro'] .btn-danger {
+  color: var(--danger);
+}
+
+[data-look='retro'] .btn-link {
+  text-decoration-thickness: 2px;
+}
+
+[data-look='retro'] .icon-btn:hover {
+  border-color: var(--ink);
+  background: var(--key);
+}
+
+[data-look='retro'] .icon-btn:active {
+  transform: translateY(2px);
+}
+
+/* Keycaps */
+[data-look='retro'] .chip {
+  border: 2px solid var(--key-lip);
+  border-radius: 6px;
+  background: var(--key);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--key-lip);
+}
+
+[data-look='retro'] .chip:hover {
+  border-color: var(--key-lip);
+  background: var(--key-hover);
+  color: var(--ink);
+}
+
+[data-look='retro'] .chip:active,
+[data-look='retro'] .chip[aria-pressed='true'] {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--key-lip), inset 0 2px 4px rgba(0, 0, 0, 0.22);
+}
+
+[data-look='retro'] .chip[aria-pressed='true'] {
+  background: var(--pink);
+  color: var(--on-pink);
+}
+
+[data-look='retro'] .chip-link {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* VCR piano keys: press one and it stays down. */
+[data-look='retro'] .seg {
+  gap: 3px;
+  padding: 3px 3px 6px;
+  border: 2px solid var(--key-lip);
+  border-radius: 8px;
+  background: var(--slot);
+}
+
+[data-look='retro'] .seg > button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--key);
+  color: var(--ink);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 70ms ease-out, background-color 120ms;
+}
+
+[data-look='retro'][data-theme='night'] .seg > button {
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+[data-look='retro'] .seg > button:not([aria-pressed='true']):hover {
+  background: var(--key-hover);
+  color: var(--ink);
+}
+
+[data-look='retro'] .seg > button[aria-pressed='true'] {
+  background: var(--pink);
+  color: var(--on-pink);
+  transform: translateY(3px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Stars are punched into a cinema ticket. */
+[data-look='retro'] .stars-input {
+  gap: 2px;
+  width: max-content;
+  padding: 6px 20px;
+  border-radius: 4px;
+  background: var(--ticket);
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent 9px, #000 9.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 9px, #000 9.5px) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 50%, transparent 9px, #000 9.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 9px, #000 9.5px) right / 51% 100% no-repeat;
+}
+
+[data-look='retro'] .star-btn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ticket-ink);
+  transition: transform 80ms ease-out;
+}
+
+[data-look='retro'] .star-btn svg {
+  width: 26px;
+  height: 26px;
+}
+
+[data-look='retro'] .star-btn:active {
+  transform: scale(0.88);
+}
+
+[data-look='retro'] .star-btn[aria-pressed='true'] {
+  background: transparent;
+  color: var(--ticket-hole);
+  animation: r-punch 300ms var(--ease-slam);
+}
+
+@keyframes r-punch {
+  0% {
+    transform: scale(1.4) rotate(-16deg);
+  }
+  60% {
+    transform: scale(0.88) rotate(5deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* Typewriter fields on paper, OSD text entry on a screen. */
+[data-look='retro'] :is(.input, .textarea, .select, .search) {
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background: var(--field);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.08);
+}
+
+[data-look='retro'][data-theme='night'] :is(.input, .textarea, .select, .search) {
+  border-color: var(--rule2);
+}
+
+[data-look='retro'][data-theme='night'] :is(.input, .textarea, .select, .search input) {
+  font-family: var(--f-osd);
+  font-size: 21px;
+  letter-spacing: 0.03em;
+}
+
+[data-look='retro'][data-theme='night'] .textarea {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+/* ── Paper & objects ──────────────────────────────────────────────────── */
+
+[data-look='retro']
+  :is(.panel, .card, .heatbox, .dispatch, .person, .verdict, .treaty, .pcard, .w-tile, .live-card, .in-passport, .soon, .now-form, .split-pane, .holder) {
+  border: var(--card-bd);
+  border-radius: 3px;
+  box-shadow: var(--card-shadow);
+}
+
+@media (min-width: 1024px) {
+  [data-look='retro'] .booklet {
+    border: var(--card-bd);
+    box-shadow: var(--card-shadow);
+  }
+
+  [data-look='retro'] .booklet > .holder,
+  [data-look='retro'] .booklet-right > .panel {
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+[data-look='retro'] :is(.gate-card, .exchange, .visa-empty, .empty-state, .canon-empty) {
+  border: 2px dashed var(--rule2);
+  border-radius: 3px;
+}
+
+[data-look='retro'] .gate-card {
+  border-color: var(--rose);
+}
+
+/* Masking tape */
+[data-look='retro'] .holder::before {
+  content: '';
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  right: -20px;
+  width: 84px;
+  height: 22px;
+  background: var(--tape);
+  transform: rotate(38deg);
+  pointer-events: none;
+}
+
+[data-look='retro'] .holder-band {
+  background: var(--rose);
+  color: var(--on-rose);
+}
+
+[data-look='retro'] .holder-band .display {
+  letter-spacing: 0.12em;
+}
+
+/* The holder's name is written by hand, like a tape label. */
+[data-look='retro'] .holder-fields dd.holder-name {
+  margin: 2px 0 4px;
+  font-family: var(--f-hand);
+  font-size: 30px;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.05;
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+
+[data-look='retro'] .photo {
+  border: 2px solid var(--ink);
+  background-color: #f2c23a;
+  background-image: radial-gradient(circle, rgba(195, 39, 43, 0.72) 1.2px, transparent 1.7px);
+}
+
+[data-look='retro'] .photo span {
+  color: #1c1712;
+}
+
+[data-look='retro'] .holder-stats {
+  border-top: var(--card-bd);
+  border-bottom: var(--card-bd);
+}
+
+[data-look='retro'][data-theme='night'] .holder-stats b {
+  font-family: var(--f-osd);
+  font-size: 44px;
+  line-height: 0.8;
+  letter-spacing: 0.02em;
+  color: var(--pink);
+}
+
+/* The Wrapped button is the spine of a VHS tape with a hand-written label. */
+[data-look='retro'] .wrapped-bar {
+  gap: 10px;
+  padding: 7px 10px 7px 7px;
+  border-radius: 4px;
+  background: #15110e;
+  color: #efe4cc;
+  box-shadow: inset 0 0 0 2px #000, 0 3px 0 #000;
+}
+
+[data-look='retro'] .wrapped-bar:hover {
+  background: #0a0806;
+}
+
+[data-look='retro'] .wrapped-bar .display {
+  flex: 1;
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: #f2e6c9;
+  color: #1c1712;
+  font-family: var(--f-hand);
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  transform: rotate(-1deg);
+}
+
+[data-look='retro'] .wrapped-bar .mono {
+  font-family: var(--f-osd);
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #f4c542;
+}
+
+[data-look='retro'] .wrapped-bar .mono::before {
+  content: '\25B6\FE0E\00a0';
+}
+
+[data-look='retro'] .canon-slot {
+  position: relative;
+}
+
+[data-look='retro'] .canon-slot::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  top: -7px;
+  left: 50%;
+  width: 46%;
+  height: 15px;
+  background: var(--tape);
+  transform: translateX(-50%) rotate(-3deg);
+  pointer-events: none;
+}
+
+[data-look='retro'] .canon-grid > li:nth-child(even) .canon-slot::after {
+  transform: translateX(-50%) rotate(4deg);
+}
+
+[data-look='retro'] .canon-grid > li:nth-child(3n + 1) .poster {
+  transform: rotate(-1deg);
+}
+
+[data-look='retro'] .canon-grid > li:nth-child(3n + 2) .poster {
+  transform: rotate(0.8deg);
+}
+
+[data-look='retro'] .canon-slot:hover .poster {
+  transform: translateY(-2px) rotate(0);
+}
+
+/* Posters get a halftone screen, like a cheap print. */
+[data-look='retro'] .poster {
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+}
+
+[data-look='retro'][data-theme='night'] .poster {
+  border-color: #000;
+}
+
+[data-look='retro'] .poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.3) 0.7px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+
+[data-look='retro'] .poster-title {
+  text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.22);
+}
+
+/* Visa pages: a school notebook with a red margin. */
+[data-look='retro'] .visa-grid.ruled {
+  background-image:
+    linear-gradient(90deg, transparent 22px, color-mix(in srgb, var(--rose) 45%, transparent) 22px 24px, transparent 24px),
+    linear-gradient(to bottom, transparent 31px, var(--rule) 31px, var(--rule) 32px);
+  background-size: 100% 100%, 100% 32px;
+}
+
+.visa-grid.turn-next {
+  animation: r-turn-next 320ms var(--ease-out);
+}
+
+.visa-grid.turn-prev {
+  animation: r-turn-prev 320ms var(--ease-out);
+}
+
+@keyframes r-turn-next {
+  from {
+    opacity: 0;
+    transform: translateX(28px) rotate(0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes r-turn-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-28px) rotate(-0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Discover ─────────────────────────────────────────────────────────── */
+
+/* The AI tools are VHS tapes with the 80s rainbow stripe. */
+[data-look='retro'] .tool-card {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 14px 14px;
+  border: 2px solid #000;
+  border-radius: 5px;
+  background: #17130f;
+  color: #efe4cc;
+  box-shadow: var(--card-shadow);
+}
+
+[data-look='retro'] .tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(90deg, #c3272b 0 33.3%, #e8862e 33.3% 66.6%, #f2c23a 66.6%);
+}
+
+[data-look='retro'] .tool-card:hover {
+  background: #000;
+}
+
+[data-look='retro'] .tool-card h2 {
+  color: #f3e9d2;
+}
+
+[data-look='retro'] .tool-card p {
+  color: #bfb096;
+}
+
+[data-look='retro'] .tool-card .ai-label {
+  padding: 0;
+  background: transparent;
+  color: #f4c542;
+  font-family: var(--f-osd);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+[data-look='retro'] .tool-card .ai-label::before {
+  content: '\25CF\00a0';
+  color: #e5483f;
+}
+
+[data-look='retro'] .dlist {
+  border-top: var(--card-bd);
+}
+
+[data-look='retro'] .drow {
+  border-bottom: 1px dashed var(--rule2);
+}
+
+[data-look='retro'] .drow:hover,
+[data-look='retro'] .drow[aria-current='true'] {
+  background: var(--ivory);
+}
+
+[data-look='retro'] .drow[aria-current='true'] {
+  box-shadow: inset 4px 0 0 var(--pink);
+}
+
+/* ── Record ───────────────────────────────────────────────────────────── */
+
+[data-look='retro'] .heat-cell {
+  height: 12px;
+  border-radius: 1px;
+}
+
+[data-look='retro'] .inline-note {
+  border-left: 4px solid var(--rose);
+  background: var(--pink-bg);
+}
+
+/* ── Feed & people ────────────────────────────────────────────────────── */
+
+[data-look='retro'] .dispatch {
+  position: relative;
+}
+
+[data-look='retro'] .dispatch::before {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  top: -8px;
+  left: 50%;
+  width: 72px;
+  height: 16px;
+  background: var(--tape);
+  transform: translateX(-50%) rotate(-2deg);
+  pointer-events: none;
+}
+
+[data-look='retro'] .feed-list > .dispatch:nth-child(odd) {
+  transform: rotate(-0.5deg);
+}
+
+[data-look='retro'] .feed-list > .dispatch:nth-child(even) {
+  transform: rotate(0.45deg);
+}
+
+[data-look='retro'] .live-card.is-me {
+  background: var(--pink-bg);
+}
+
+[data-look='retro'] .progress {
+  height: 8px;
+  border: 1.5px solid var(--ink);
+  background: repeating-linear-gradient(90deg, transparent 0 7px, color-mix(in srgb, var(--ink) 18%, transparent) 7px 8px);
+}
+
+[data-look='retro'] .progress > i {
+  background: var(--rose);
+}
+
+[data-look='retro'] .live-dot {
+  box-shadow: 0 0 8px var(--rose);
+}
+
+/* Heat alerts are a yellow caution sticker. */
+[data-look='retro'] .heat-alert {
+  background-color: var(--pink);
+  background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0 10px, transparent 10px 20px);
+  color: var(--on-pink);
+}
+
+/* Taste twin: a red screen-printed poster. */
+[data-look='retro'] .twin {
+  border: 2px solid #000;
+  border-radius: 3px;
+  background: #c3272b;
+  color: #fff4e0;
+  box-shadow: var(--card-shadow);
+}
+
+[data-look='retro'] .twin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.24) 1px, transparent 1.4px);
+  background-size: 5px 5px;
+  mix-blend-mode: multiply;
+}
+
+[data-look='retro'] .twin-pct {
+  -webkit-text-stroke: 2px rgba(255, 244, 224, 0.6);
+}
+
+[data-look='retro'] .twin .label {
+  color: #f4c542;
+}
+
+[data-look='retro'] .twin h2 {
+  color: #fff4e0;
+  text-shadow: 3px 3px 0 #000;
+}
+
+[data-look='retro'] .twin p {
+  color: #ffe9d2;
+}
+
+[data-look='retro'] :is(.twin, .w-hero) .btn {
+  border-color: #000;
+  background: #f3e9d2;
+  color: #17120d;
+  box-shadow: 0 4px 0 #000;
+}
+
+[data-look='retro'] .twin .btn-rose {
+  background: #f4c542;
+}
+
+/* ── Wrapped: a VHS cover with the 80s stripes ────────────────────────── */
+
+[data-look='retro'] .w-hero {
+  padding-top: 60px;
+  border: 2px solid #000;
+  border-radius: 3px;
+  background: #120e0b;
+  color: #f3e9d2;
+  box-shadow: var(--card-shadow);
+}
+
+[data-look='retro'] .w-hero::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  height: 22px;
+  background: linear-gradient(#c3272b 0 25%, #e8862e 25% 50%, #f2c23a 50% 75%, #efe4cc 75%);
+}
+
+[data-look='retro'] .w-year {
+  -webkit-text-stroke: 2px rgba(242, 194, 58, 0.55);
+}
+
+[data-look='retro'] .w-hero .label,
+[data-look='retro'] .w-hero h2 em {
+  color: #f4c542;
+}
+
+[data-look='retro'][data-theme='night'] .w-big {
+  font-family: var(--f-osd);
+  font-size: 64px;
+  color: var(--pink);
+}
+
+[data-look='retro'] .bar i {
+  background-color: var(--ink);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.1px);
+  background-size: 4px 4px;
+}
+
+[data-look='retro'] .bar.is-top i {
+  background-color: var(--rose);
+}
+
+[data-look='retro'] .mix-bar {
+  border-width: 2px;
+}
+
+/* ── Tools ────────────────────────────────────────────────────────────── */
+
+[data-look='retro'] .verdict-head {
+  background: var(--rose);
+  color: var(--on-rose);
+}
+
+[data-look='retro'][data-theme='night'] .verdict-pct {
+  font-family: var(--f-osd);
+  font-size: 66px;
+  color: var(--pink);
+}
+
+[data-look='retro'] .factor-bar {
+  height: 8px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+}
+
+[data-look='retro'] .factor-bar i {
+  background: var(--ink);
+}
+
+/* Shield presets are channel buttons; the chosen one stays down. */
+[data-look='retro'] :is(.preset, .radio-card) {
+  border: 2px solid var(--key-lip);
+  border-radius: 7px;
+  background: var(--key);
+  box-shadow: 0 4px 0 var(--key-lip);
+}
+
+[data-look='retro'] .preset:hover {
+  border-color: var(--key-lip);
+  background: var(--key-hover);
+}
+
+[data-look='retro'] :is(.preset:active, .radio-card:active) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--key-lip);
+}
+
+[data-look='retro'] :is(.preset[aria-pressed='true'], .radio-card:has(input:checked)) {
+  background: var(--pink);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--key-lip), inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+[data-look='retro'] :is(.preset[aria-pressed='true'], .radio-card:has(input:checked)) :is(h3, p, strong, span) {
+  color: var(--on-pink);
+}
+
+/* Radio buttons become indicator LEDs. */
+[data-look='retro'] .radio-card input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #4a3d30;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+[data-look='retro'] .radio-card input:checked {
+  background: #e5483f;
+  box-shadow: 0 0 8px 1px rgba(229, 72, 63, 0.8), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+}
+
+[data-look='retro'] .radio-card input:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 3px;
+}
+
+/* ── Shell ────────────────────────────────────────────────────────────── */
+
+[data-look='retro'] .page {
+  animation: r-paper-in 340ms var(--ease-out) both;
+}
+
+/* Changing pages on a VHS: a quick tracking wobble. */
+[data-look='retro'][data-theme='night'] .page {
+  animation: r-vhs-in 420ms linear both;
+}
+
+@keyframes r-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-0.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes r-vhs-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px) skewX(6deg);
+    filter: brightness(1.9) contrast(1.3) saturate(0.4);
+  }
+  18% {
+    opacity: 1;
+    transform: translateX(6px) skewX(-3deg);
+  }
+  36% {
+    transform: translateX(-3px) skewX(1deg);
+    filter: brightness(1.2) contrast(1.1);
+  }
+  60% {
+    transform: translateX(1px);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+[data-look='retro'] .topbar {
+  border-bottom: 3px solid var(--ink);
+}
+
+[data-look='retro'][data-theme='night'] .topbar {
+  background: var(--tab-bg);
+  border-bottom: 2px solid #000;
+}
+
+/* The tab bar is the front panel of a VCR. */
+[data-look='retro'] .tabbar {
+  background: var(--tab-bg);
+  border-top: 3px solid #000;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-look='retro'] :is(.tab, .tab-stamp) {
+  font-family: var(--f-osd);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+[data-look='retro'] .tab {
+  color: var(--tab-dim);
+}
+
+[data-look='retro'] .tab[aria-current='page'] {
+  color: var(--tab-fg);
+}
+
+[data-look='retro'] .tab[aria-current='page'] .tab-label {
+  border-bottom-color: transparent;
+}
+
+[data-look='retro'] .tab[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #f4c542;
+  box-shadow: 0 0 8px #f4c542;
+}
+
+[data-look='retro'] .tab-stamp {
+  color: var(--tab-fg);
+}
+
+/* The stamp button is a big red REC key. */
+[data-look='retro'] .tab-stamp-sq {
+  top: -20px;
+  width: 54px;
+  height: 54px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f27367, #c3272b 58%, #8e1a1d);
+  color: #fff4e0;
+  box-shadow: 0 4px 0 #000, 0 0 0 4px var(--tab-bg);
+  transition: transform 70ms ease-out, box-shadow 70ms ease-out;
+}
+
+[data-look='retro'] .tab-stamp:hover .tab-stamp-sq {
+  background: radial-gradient(circle at 35% 30%, #f58377, #cf2e32 58%, #941c1f);
+}
+
+[data-look='retro'] .tab-stamp:active .tab-stamp-sq {
+  transform: translateX(-50%) translateY(3px);
+  box-shadow: 0 1px 0 #000, 0 0 0 4px var(--tab-bg);
+}
+
+/* iPad sidebar: a manila folder by day, the side of a VCR by night. */
+[data-look='retro'] .rail {
+  background: var(--manila);
+  border-right: 3px solid var(--ink);
+}
+
+[data-look='retro'][data-theme='night'] .rail {
+  border-right: 2px solid #000;
+}
+
+[data-look='retro'] .rail-link {
+  border: 0;
+  border-radius: 3px;
+}
+
+[data-look='retro'] .rail-link:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+
+/* The current page is marked with a highlighter. */
+[data-look='retro'] .rail-link[aria-current='page'] {
+  background: linear-gradient(100deg, transparent 1%, rgba(242, 194, 58, 0.92) 3% 95%, transparent 98%);
+  color: #1c1712;
+}
+
+[data-look='retro'] .rail-link[aria-current='page']::after {
+  border-radius: 50%;
+  background: #c3272b;
+}
+
+[data-look='retro'][data-theme='night'] .rail-link {
+  font-family: var(--f-osd);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--tab-dim);
+}
+
+[data-look='retro'][data-theme='night'] .rail-link[aria-current='page'] {
+  background: rgba(244, 197, 66, 0.1);
+  color: #f4c542;
+  text-shadow: 0 0 10px rgba(244, 197, 66, 0.45);
+}
+
+[data-look='retro'][data-theme='night'] .rail-link[aria-current='page']::after {
+  background: #e5483f;
+  box-shadow: 0 0 8px #e5483f;
+}
+
+[data-look='retro'] .rail-cta.btn-pri,
+[data-look='retro'] .rail-cta.btn-pri:not(:disabled):hover {
+  border-color: var(--key-lip);
+  background: var(--rose);
+  color: var(--on-rose);
+  box-shadow: 0 4px 0 var(--key-lip);
+}
+
+.cord-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+}
+
+/* Sheets: torn paper on phones, a folder with a tab on iPad. */
+[data-look='retro'] .sheet {
+  border-top: 0;
+  background: var(--parch);
+}
+
+[data-look='retro'] .sheet::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -11px;
+  height: 12px;
+  pointer-events: none;
+  background:
+    linear-gradient(-45deg, var(--parch) 6px, transparent 0) 0 100% / 12px 12px repeat-x,
+    linear-gradient(45deg, var(--parch) 6px, transparent 0) 0 100% / 12px 12px repeat-x;
+}
+
+[data-look='retro'] .sheet-head {
+  border-bottom: 2px dashed var(--rule2);
+}
+
+@media (min-width: 768px) {
+  [data-look='retro'] .sheet {
+    border-left: 3px solid var(--ink);
+  }
+
+  [data-look='retro'] .sheet::before {
+    top: 28px;
+    left: -40px;
+    right: auto;
+    width: 40px;
+    height: 120px;
+    border: 3px solid var(--ink);
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+    background: var(--manila);
+  }
+}
+
+/* Toasts are Dymo labels. */
+[data-look='retro'] .toast {
+  padding: 9px 18px;
+  border-radius: 3px;
+  background-color: #c3272b;
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 3px);
+  color: #fff4e0;
+  font-family: var(--f-display);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 -1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 3px 0 #6e1214, 0 10px 20px rgba(0, 0, 0, 0.3);
+  transform: translateX(-50%) rotate(-1.5deg);
+  animation-name: r-dymo-in;
+}
+
+@keyframes r-dymo-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px) rotate(-7deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(-1.5deg);
+  }
+}
+
+/* A blinking REC while the stamp comes down at night. */
+[data-look='retro'][data-theme='night'] .moment::after {
+  content: '\25CF\00a0REC';
+  position: absolute;
+  top: calc(18px + var(--safe-top));
+  left: 20px;
+  font-family: var(--f-osd);
+  font-size: 30px;
+  letter-spacing: 0.1em;
+  color: #e5483f;
+  animation: blink 1s steps(1) infinite;
+}
+
+/* ── Passport Control at night: a desk lamp over the passport ─────────── */
+
+[data-look='retro'][data-theme='night'] .pc {
+  background-image:
+    radial-gradient(60% 50% at 50% 0%, rgba(255, 210, 140, 0.2), transparent 70%),
+    linear-gradient(to bottom, transparent 31px, rgba(239, 228, 204, 0.04) 31px, rgba(239, 228, 204, 0.04) 32px);
+  background-size: 100% 100%, 100% 32px;
+}
+
+[data-look='retro'][data-theme='night'] .pc-copy {
+  text-shadow: 2px 0 0 rgba(229, 72, 63, 0.55), -2px 0 0 rgba(95, 168, 163, 0.45);
+}
+
+[data-look='retro'][data-theme='night'] .pc-ticker {
+  color: #efe4cc;
+}
+
+/* ── Slide to stamp ───────────────────────────────────────────────────── */
+
+.slide {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 66px;
+  padding: 5px;
+  border: 2px solid var(--key-lip);
+  border-radius: 10px;
+  background: var(--slot);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.25);
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.slide.is-shake {
+  animation: shake 240ms var(--ease-out);
+}
+
+.slide-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-left: 64px;
+  font-family: var(--f-display);
+  font-size: 19px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slot-ink);
+  pointer-events: none;
+}
+
+.slide-arrows {
+  display: inline-block;
+  color: var(--pink);
+  animation: r-arrows 1.4s ease-in-out infinite;
+}
+
+@keyframes r-arrows {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(6px);
+    opacity: 1;
+  }
+}
+
+.slide-ink {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(90deg, rgba(195, 39, 43, 0.9) 0 3px, rgba(195, 39, 43, 0.62) 3px 5px);
+  pointer-events: none;
+  transition: width 300ms var(--ease-slam);
+}
+
+.slide-knob {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid #000;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #b98352, #8a5a31 60%, #6b4322);
+  box-shadow: 0 3px 0 #000, inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #fff4e0;
+  cursor: grab;
+  touch-action: none;
+  transition: transform 300ms var(--ease-slam), background 200ms;
+}
+
+.slide-knob::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: -3px;
+  height: 6px;
+  border-radius: 0 0 4px 4px;
+  background: #c3272b;
+}
+
+.slide-knob:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: 2px;
+}
+
+.slide.is-drag .slide-knob,
+.slide.is-drag .slide-ink {
+  transition: none;
+}
+
+.slide.is-drag .slide-knob {
+  cursor: grabbing;
+}
+
+.slide.is-done .slide-knob {
+  background: linear-gradient(180deg, #f6d36a, #d9a928);
+  color: #1c1712;
+}
+
+/* ── Pull cord (lights) ───────────────────────────────────────────────── */
+
+.cord {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: grab;
+  touch-action: none;
+}
+
+.cord-line {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: repeating-linear-gradient(to bottom, #cdb78a 0 3px, #7e6b4c 3px 5px);
+  transition: height 280ms var(--ease-slam);
+}
+
+.cord-bead {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 14px;
+  height: 18px;
+  margin-left: -7px;
+  border-radius: 7px 7px 9px 9px;
+  background: radial-gradient(circle at 35% 30%, #f7dc96, #b8894a 60%, #6e4e22);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+  transition: transform 280ms var(--ease-slam);
+}
+
+.cord.is-drag .cord-line,
+.cord.is-drag .cord-bead {
+  transition: none;
+}
+
+.cord.is-drag {
+  cursor: grabbing;
+}
+
+.cord:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-look='retro'] .page {
+    animation: fade-in 150ms linear both !important;
+  }
+
+  [data-look='retro'] .star-btn[aria-pressed='true'],
+  .slide-arrows,
+  .visa-grid.turn-next,
+  .visa-grid.turn-prev {
+    animation: none !important;
+  }
+
+  [data-look='retro'][data-theme='night'] .moment::after {
+    animation: none !important;
+  }
+}
+
+/* Keep the REC key clear of its label. */
+[data-look='retro'] .tab-stamp-sq {
+  top: -24px;
+  width: 50px;
+  height: 50px;
+}
+
+[data-look='retro'] .tab-stamp {
+  padding-bottom: 6px;
+}
+
+/* The "Coming soon" stamp sits in the corner, clear of the title. */
+[data-look='retro'] .soon-stamp,
+[data-look='modern'] .soon-stamp {
+  top: 8px;
+  right: 6px;
+  width: 92px;
+}
+
+[data-look='retro'] .soon-title,
+[data-look='modern'] .soon-title {
+  padding-right: 96px;
+}
+
+/* Piano keys fit four across on a 320px phone. */
+[data-look='retro'] .seg > button {
+  padding-left: 6px;
+  padding-right: 6px;
+  letter-spacing: 0.08em;
+}

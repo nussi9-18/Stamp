@@ -20,6 +20,11 @@ Read this first in a new session. The spec is the original build prompt (STAMP_P
 - `/api/archivist`, `/api/diplomat`: Claude (`claude-opus-5-5`, override `ANTHROPIC_MODEL`), zod-validated JSON, keyword fallback on failure/rate-limit/offline.
 - `/api/media/search`: world archives — TMDB (films/series, `TMDB_API_KEY`), Open Library (books), AniList (manga/anime), RAWG (games, `RAWG_API_KEY`), MusicBrainz (albums). Results appear in Discover under "From the world archive"; saved to the passport only when stamped/wishlisted. No heat data for these.
 
+**Two looks (Prompt 1, done)**
+- Modern (Apple TV-like) and Retro (80s / VHS / IT vibe, tactile), each light + dark. Picked after sign-up, changeable in Settings, saved in `prefs.look` (syncs).
+- Retro interactions: slide to stamp, lamp pull-cord for light/dark, piano-key segments, ticket-punch stars, Dymo toasts, VHS page wobble, swipe visa pages.
+- Files: `src/app/themes/{modern,retro}.css`, `src/components/app/{SlideAction,PullCord,LookPicker,PageTitle}.tsx`. Checked at 320–1440px in all 4 looks, no overflow.
+
 **Features added after the spec**
 - "Now" status (like Discord): set from any record ("I'm watching this"), optional progress, fades after 1–24 h by kind, ends on stamp; shown on Passport, Feed "Right now", People. Followers-only via `presence` table.
 - Mystery dispatch = **Coming soon** (owner can't ship physical goods): card on Passport + Settings with only a "Notify me" button (`prefs.dispatchInterest`); website shows tiers without prices. Count: `select count(*) from profiles where prefs->>'dispatchInterest'='true';`
@@ -40,6 +45,8 @@ Read this first in a new session. The spec is the original build prompt (STAMP_P
 1. Confirm Supabase is set up: all 3 migrations + `seed.sql` run; Site URL + redirect `https://stamp-gilt.vercel.app/app`; email template with `{{ .Token }}` and `{{ .ConfirmationURL }}` (needs custom SMTP); optional Google/Apple providers.
 2. `TMDB_API_KEY` (films/series), `RAWG_API_KEY` (games; owner has one — put it in Vercel), `ANTHROPIC_API_KEY` (AI tools).
 3. Decide: real TMDB posters vs typographic posters (spec says typographic for copyright); custom domain.
+
+**Next prompts** — see NEXT_PROMPTS.md (Prompt 1 is done; start with Prompt 2: real posters + Retro zine style).
 
 **Build — month plan**
 - Week 2 (rest of "Now"): Spotify (OAuth, currently playing), Steam (Web API), Xbox (OpenXBL), PlayStation as "experimental" (unofficial NPSSO token; may break, against Sony terms). Owner's decisions so far: status visible to followers; TTLs as implemented.

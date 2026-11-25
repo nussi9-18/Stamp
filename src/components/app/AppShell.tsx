@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { formatDate } from '@/lib/format';
-import { endMoment, getItem, openSheet, requestSearchFocus, toggleTheme, useStore } from '@/lib/store/store';
+import { claimLookPrompt, endMoment, getItem, getState, openSheet, requestSearchFocus, toggleTheme, useLook, useStore } from '@/lib/store/store';
 import { Icon, type IconName } from '../brand/Icon';
 import { Seal } from '../brand/Seal';
 import { ItemStamp, stampLook } from '../brand/Stamp';
+import { PullCord } from './PullCord';
 import { SheetHost } from './sheets/SheetHost';
 
 const MAIN: { href: string; label: string; icon: IconName }[] = [
@@ -46,6 +47,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [thud]);
 
+  const look = useLook();
+  // Passports that haven't picked a look yet get the choice once (new ones then read the field manual).
+  const needsLook = useStore((s) => !!s.data?.passport && !s.data.prefs.look);
+  useEffect(() => {
+    if (!needsLook) return;
+    const t = setTimeout(() => {
+      const s = getState();
+      if (s.sheets.length || s.moment || !claimLookPrompt()) return;
+      openSheet({ type: 'look', next: s.data?.prefs.manualSeen ? undefined : 'manual' });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [needsLook]);
+
   const stampSomething = () => {
     requestSearchFocus();
     if (!isActive(pathname, '/app/discover')) router.push('/app/discover');
@@ -70,9 +84,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/app/wrapped" className="icon-btn" aria-label="Wrapped">
             <Icon name="wrapped" />
           </Link>
-          <button type="button" className="icon-btn" onClick={toggleTheme} aria-pressed={theme === 'night'} aria-label={theme === 'night' ? 'Day mode' : 'Nocturne mode'}>
-            <Icon name={theme === 'night' ? 'sun' : 'moon'} />
-          </button>
+          {look === 'retro' ? (
+            <PullCord />
+          ) : (
+            <button type="button" className="icon-btn" onClick={toggleTheme} aria-pressed={theme === 'night'} aria-label={theme === 'night' ? 'Light mode' : 'Dark mode'}>
+              <Icon name={theme === 'night' ? 'sun' : 'moon'} />
+            </button>
+          )}
         </div>
       </header>
 
@@ -110,10 +128,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           Stamp something
         </button>
         <div className="rail-foot">
-          <button type="button" className="btn" onClick={toggleTheme} aria-pressed={theme === 'night'}>
-            <Icon name={theme === 'night' ? 'sun' : 'moon'} size={16} />
-            {theme === 'night' ? 'Day mode' : 'Nocturne mode'}
-          </button>
+          {look === 'retro' ? (
+            <div className="cord-row">
+              <PullCord />
+              <span className="label">{theme === 'night' ? 'Pull for light' : 'Pull for dark'}</span>
+            </div>
+          ) : (
+            <button type="button" className="btn" onClick={toggleTheme} aria-pressed={theme === 'night'}>
+              <Icon name={theme === 'night' ? 'sun' : 'moon'} size={16} />
+              {theme === 'night' ? 'Light mode' : 'Dark mode'}
+            </button>
+          )}
           <button type="button" className="btn" onClick={() => openSheet({ type: 'settings' })}>
             <Icon name="settings" size={16} />
             Settings
@@ -129,7 +154,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <main id="main" className="app-main" tabIndex={-1}>
-        {children}
+        <div className="page" key={pathname}>
+          {children}
+        </div>
       </main>
 
       {/* Phone tab bar */}

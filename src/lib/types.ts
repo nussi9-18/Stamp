@@ -59,6 +59,9 @@ export type Shield = { preset: ShieldPreset; limits: number[]; action: ShieldAct
 
 export type Theme = 'day' | 'night';
 
+/** The two looks: Modern (clean, Apple TV-like) and Retro (VHS / 80s print, tactile). */
+export type Look = 'modern' | 'retro';
+
 export const AFFINITIES = [
   'Slow cinema',
   'Arab cinema',

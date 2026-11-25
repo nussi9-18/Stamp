@@ -13,6 +13,7 @@ import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
 import { AiLabel, HeatChip } from '../../ui/bits';
 import { RecordView } from '../RecordView';
+import { PageTitle } from '../PageTitle';
 
 function useWide(min = 1024) {
   const [wide, setWide] = useState(false);
@@ -167,12 +168,7 @@ export function DiscoverScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          FIND &amp; <em>stamp</em>
-        </h1>
-        <p className="subtitle page-sub">Films, series, books, manga, games and albums.</p>
-      </header>
+      <PageTitle retro={<>FIND &amp; <em>stamp</em></>} modern="Discover" sub="Films, series, books, manga, games and albums." />
 
       <div className="tools">
         <Link href="/app/archivist" className="tool-card">

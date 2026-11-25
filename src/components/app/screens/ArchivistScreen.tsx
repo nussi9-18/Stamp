@@ -10,6 +10,7 @@ import type { Kind } from '@/lib/types';
 import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
+import { PageTitle } from '../PageTitle';
 
 type SR = {
   start: () => void;
@@ -125,14 +126,12 @@ export function ArchivistScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          FORGOT THE TITLE? <em>Describe it.</em>
-        </h1>
-        <p className="subtitle page-sub">
-          Tell the Archivist anything you remember — a shot, a song, an actor’s face, an object, roughly when. More clues, sharper answer.
-        </p>
-      </header>
+      <PageTitle
+        retro={<>FORGOT THE TITLE? <em>Describe it.</em></>}
+        modern="Archivist"
+        sub="Tell the Archivist anything you remember — a shot, a song, an actor’s face, an object, roughly when. More clues, sharper answer."
+        keepSub
+      />
 
       <div className="tool-layout">
         <form onSubmit={identify} noValidate style={{ display: 'grid', gap: 12 }}>

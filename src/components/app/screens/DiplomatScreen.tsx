@@ -14,6 +14,7 @@ import type { Kind, Person } from '@/lib/types';
 import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
+import { PageTitle } from '../PageTitle';
 
 type Draft = { name: string; likes: string; favourites: string; ceiling: number };
 const EMPTY: Draft = { name: '', likes: '', favourites: '', ceiling: 3 };
@@ -103,12 +104,12 @@ export function DiplomatScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          ONE PICK <em>for all of you</em>
-        </h1>
-        <p className="subtitle page-sub">Add each person’s taste. The Diplomat finds the bridge — something everyone will actually like — and explains why.</p>
-      </header>
+      <PageTitle
+        retro={<>ONE PICK <em>for all of you</em></>}
+        modern="Diplomat"
+        sub="Add each person’s taste. The Diplomat finds one pick everyone will like, and says why."
+        keepSub
+      />
 
       <form onSubmit={find} noValidate style={{ display: 'grid', gap: 14 }}>
         <div className="people-forms">

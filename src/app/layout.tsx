@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Anton, JetBrains_Mono, Newsreader, Playfair_Display } from 'next/font/google';
+import { Anton, Inter, JetBrains_Mono, Newsreader, Permanent_Marker, Playfair_Display, VT323 } from 'next/font/google';
 import './globals.css';
 
 const anton = Anton({ weight: '400', subsets: ['latin', 'latin-ext'], display: 'swap', variable: '--font-anton' });
@@ -22,6 +22,12 @@ const mono = JetBrains_Mono({
   display: 'swap',
   variable: '--font-jetbrains',
 });
+
+// Modern look: SF Pro on Apple devices, Inter everywhere else.
+const inter = Inter({ subsets: ['latin', 'latin-ext'], display: 'swap', variable: '--font-inter' });
+// Retro look: VHS on-screen display and a marker for tape labels.
+const vt323 = VT323({ weight: '400', subsets: ['latin', 'latin-ext'], display: 'swap', variable: '--font-vt323' });
+const marker = Permanent_Marker({ weight: '400', subsets: ['latin'], display: 'swap', variable: '--font-marker' });
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -71,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       data-theme="day"
       suppressHydrationWarning
-      className={`${anton.variable} ${playfair.variable} ${newsreader.variable} ${mono.variable}`}
+      className={`${anton.variable} ${playfair.variable} ${newsreader.variable} ${mono.variable} ${inter.variable} ${vt323.variable} ${marker.variable}`}
     >
       <body>
         {children}

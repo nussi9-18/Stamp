@@ -5,7 +5,7 @@ Reply to the owner in Arabic, short and step by step.
 
 ---
 
-## Prompt 1 — Two themes: Modern and Retro (do this first)
+## Prompt 1 — Two themes: Modern and Retro ✅ DONE (Nov 25)
 
 Read HANDOFF.md first.
 

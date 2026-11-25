@@ -5,7 +5,7 @@ import { CATALOG, CATALOG_BY_ID, SEED, SEED_CANON } from '../catalog';
 import { todayISO } from '../format';
 import { newPassportNo } from '../mrz';
 import { DEFAULT_SHIELD, detectPreset, PRESETS } from '../shield';
-import type { Dispatch, Item, LiveSession, Mood, Passport, Person, Place, Rating, Shield, ShieldAction, ShieldPreset, Stamp, Theme } from '../types';
+import type { Dispatch, Item, LiveSession, Look, Mood, Passport, Person, Place, Rating, Shield, ShieldAction, ShieldPreset, Stamp, Theme } from '../types';
 import { idbGet, idbSet, lsGet, lsSet } from './idb';
 import { liveNow, makeNow, nowVerb, type NowStatus } from '../now';
 
@@ -37,7 +37,7 @@ export type UserData = {
   follows: Record<string, Flag>;
   likes: Record<string, Flag>;
   custom: Record<string, CustomRec>;
-  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean };
+  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean; look?: Look };
   /** what this passport is watching / reading / playing / listening to right now */
   now?: NowStatus | null;
   sync: { lastPullAt: string | null; dirtyAt: number; pushedAt: number };
@@ -51,7 +51,8 @@ export type SheetSpec =
   | { type: 'canon-slot'; index: number }
   | { type: 'person'; id: string }
   | { type: 'add-own'; title?: string; kind?: Item['kind']; by?: string; year?: number }
-  | { type: 'passport-code' };
+  | { type: 'passport-code' }
+  | { type: 'look'; next?: 'manual' };
 
 export type ControlIntent = { kind: 'exit' } | { kind: 'save' } | { kind: 'oauth-return' };
 
@@ -73,6 +74,8 @@ export type AppState = {
   /** works found in the world archives this session (TMDB, Open Library, AniList, RAWG, MusicBrainz) */
   world: Record<string, Item>;
   control: ControlIntent | null;
+  /** the current look (Modern / Retro); mirrors data-look on <html> */
+  look: Look;
   /** set while a passport is being issued / admitted so the shell can play the field manual after */
   justIssued: boolean;
 };
@@ -92,6 +95,7 @@ const initial: AppState = {
   remote: { people: [], dispatches: [], items: {}, live: [] },
   world: {},
   control: null,
+  look: 'retro',
   justIssued: false,
 };
 
@@ -337,12 +341,66 @@ export function updatePassport(patch: Partial<Pick<PassportCore, 'name' | 'affin
   mutate((d, now) => (d.passport ? { ...d, passport: { ...d.passport, ...patch, updatedAt: now } } : d));
 }
 
+/* ── Look (Modern / Retro) × mode (light / dark) ───────────────────────── */
+
+export const DEFAULT_LOOK: Look = 'retro';
+
+/** The look last used on this device (before a passport is open), else the default. */
+export function deviceLook(): Look {
+  const v = lsGet('stamp:look');
+  return v === 'modern' || v === 'retro' ? v : DEFAULT_LOOK;
+}
+
+/** The mode last used on this device, else the system preference. */
+export function deviceTheme(): Theme {
+  const v = lsGet('stamp:theme');
+  if (v === 'day' || v === 'night') return v;
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+  } catch {
+    return 'day';
+  }
+}
+
+/** Status-bar colour follows the page background of the current look + mode. */
+function syncMetaColor() {
+  if (typeof document === 'undefined') return;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--meta').trim();
+  if (meta && bg) meta.setAttribute('content', bg);
+}
+
 export function applyTheme(theme: Theme) {
   if (typeof document === 'undefined') return;
   document.documentElement.setAttribute('data-theme', theme);
   lsSet('stamp:theme', theme);
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'night' ? '#0E0D0C' : '#F5F1E8');
+  syncMetaColor();
+}
+
+export function applyLook(look: Look) {
+  if (state.look !== look) setState({ look });
+  if (typeof document === 'undefined') return;
+  document.documentElement.setAttribute('data-look', look);
+  lsSet('stamp:look', look);
+  syncMetaColor();
+}
+
+/** Choose a look; saved with the passport so it follows you to other devices. */
+export function setLook(look: Look) {
+  applyLook(look);
+  mutate((d, now) => ({ ...d, prefs: { ...d.prefs, look }, passport: d.passport ? { ...d.passport, updatedAt: now } : d.passport }));
+}
+
+export function useLook(): Look {
+  return useStore((s) => s.look);
+}
+
+let lookPrompted = false;
+/** The "choose your look" sheet shows once, for passports that haven't picked one yet. */
+export function claimLookPrompt(): boolean {
+  if (lookPrompted) return false;
+  lookPrompted = true;
+  return true;
 }
 
 export function setTheme(theme: Theme) {
@@ -376,7 +434,8 @@ export function setShieldAction(action: ShieldAction) {
 }
 
 export function setPref<K extends keyof UserData['prefs']>(key: K, value: UserData['prefs'][K]) {
-  mutate((d) => ({ ...d, prefs: { ...d.prefs, [key]: value } }));
+  // Prefs travel on the profile row, so bump the passport too or the change never syncs.
+  mutate((d, now) => ({ ...d, prefs: { ...d.prefs, [key]: value }, passport: d.passport ? { ...d.passport, updatedAt: now } : d.passport }));
 }
 
 /* ── Stamps ────────────────────────────────────────────────────────────── */

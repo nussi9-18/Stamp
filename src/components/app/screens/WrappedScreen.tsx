@@ -10,6 +10,7 @@ import { getItem, liveStamps, requestSearchFocus, toast, useStore } from '@/lib/
 import { computeWrapped, pctChange, wrappedYears } from '@/lib/wrapped';
 import type { Kind } from '@/lib/types';
 import { Icon } from '../../brand/Icon';
+import { PageTitle } from '../PageTitle';
 
 const MIX_COLORS: Record<Kind, string> = {
   film: 'var(--ink)',
@@ -65,10 +66,7 @@ export function WrappedScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          {year} <em>wrapped</em>
-        </h1>
+      <PageTitle retro={<>{year} <em>wrapped</em></>} modern={`${year} Wrapped`}>
         <div className="seg" role="group" aria-label="Year" style={{ justifySelf: 'start' }}>
           {years.map((y) => (
             <button key={y} type="button" aria-pressed={y === year} onClick={() => setYear(y)}>
@@ -76,7 +74,7 @@ export function WrappedScreen() {
             </button>
           ))}
         </div>
-      </header>
+      </PageTitle>
 
       {w.stamps === 0 ? (
         <div className="empty-state">
@@ -106,7 +104,7 @@ export function WrappedScreen() {
             </h2>
             <p>Your {year} in stamps, counted from everything you logged this year.</p>
             <div>
-              <button type="button" className="btn" style={{ borderColor: '#F5F1E8', color: '#F5F1E8' }} onClick={share} disabled={busy}>
+              <button type="button" className="btn" onClick={share} disabled={busy}>
                 <Icon name="share" size={16} /> {busy ? 'Making the card…' : 'Share card'}
               </button>
             </div>

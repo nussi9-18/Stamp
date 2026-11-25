@@ -4,6 +4,7 @@ import { useId } from 'react';
 import { countryName, KIND_LABEL } from '@/lib/catalog';
 import { formatDate } from '@/lib/format';
 import { hash } from '@/lib/hash';
+import { useStore } from '@/lib/store/store';
 import type { Item, Place, Stamp as StampT } from '@/lib/types';
 
 export type StampShape = 'round' | 'rect' | 'oval' | 'oct';
@@ -87,11 +88,14 @@ export type StampArtProps = {
 };
 
 const MONO: React.CSSProperties = { fontFamily: 'var(--f-mono)', fontWeight: 700 };
-const DISPLAY: React.CSSProperties = { fontFamily: 'var(--f-display)' };
 
 /** 2.5.2 Rubber stamp — SVG 160×160 with a worn-ink filter. */
 export function StampArt({ shape, title, top, bottom, center, date, rating, ink, rotate = 0, seed = 7, label, className, style }: StampArtProps) {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  // Modern sets stamps in a wide sans (SF / Inter) instead of condensed Anton: fit by a wider glyph.
+  const modern = useStore((s) => s.look === 'modern');
+  const em = modern ? 0.72 : 0.5;
+  const DISPLAY: React.CSSProperties = modern ? { fontFamily: 'var(--f-display)', fontWeight: 800 } : { fontFamily: 'var(--f-display)' };
   const f = `ink-${uid}`;
   const topArc = `ta-${uid}`;
   const botArc = `ba-${uid}`;
@@ -106,7 +110,7 @@ export function StampArt({ shape, title, top, bottom, center, date, rating, ink,
         <circle cx="80" cy="80" r="66" fill="none" stroke="currentColor" strokeWidth="1.2" />
         <path id={topArc} d="M 27,80 a 53,53 0 1,1 106,0" fill="none" />
         <path id={botArc} d="M 18,80 a 62,62 0 0,0 124,0" fill="none" />
-        <text fill="currentColor" textAnchor="middle" style={{ ...DISPLAY, fontSize: fitSize(arcTitle, 150, 14, 8, 0.52), letterSpacing: '0.06em' }}>
+        <text fill="currentColor" textAnchor="middle" style={{ ...DISPLAY, fontSize: fitSize(arcTitle, 150, 14, 7, em * 1.04), letterSpacing: '0.06em' }}>
           <textPath href={`#${topArc}`} startOffset="50%">
             {arcTitle}
           </textPath>
@@ -120,7 +124,7 @@ export function StampArt({ shape, title, top, bottom, center, date, rating, ink,
         ) : null}
         {center ? (
           <>
-            <text x="80" y="84" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(center, 84, 24, 10, 0.52), letterSpacing: '0.03em' }}>
+            <text x="80" y="84" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(center, 84, 24, 9, em * 1.04), letterSpacing: '0.03em' }}>
               {center.toUpperCase()}
             </text>
             <line x1="44" x2="116" y1="91" y2="91" stroke="currentColor" strokeWidth="1" />
@@ -151,7 +155,7 @@ export function StampArt({ shape, title, top, bottom, center, date, rating, ink,
             {top.toUpperCase()}
           </text>
         ) : null}
-        <text x="80" y="80" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 120, 24, 9), letterSpacing: '0.02em' }}>
+        <text x="80" y="80" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 120, 24, 8, em), letterSpacing: '0.02em' }}>
           {t}
         </text>
         <text x="80" y="100" textAnchor="middle" fill="currentColor" style={{ ...MONO, fontSize: 11, letterSpacing: '0.06em' }}>
@@ -170,7 +174,7 @@ export function StampArt({ shape, title, top, bottom, center, date, rating, ink,
             {top.toUpperCase()}
           </text>
         ) : null}
-        <text x="80" y="83" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 112, 22, 8), letterSpacing: '0.02em' }}>
+        <text x="80" y="83" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 112, 22, 7, em), letterSpacing: '0.02em' }}>
           {t}
         </text>
         <text x="80" y="100" textAnchor="middle" fill="currentColor" style={{ ...MONO, fontSize: 10, letterSpacing: '0.06em' }}>
@@ -194,7 +198,7 @@ export function StampArt({ shape, title, top, bottom, center, date, rating, ink,
             {top.toUpperCase()}
           </text>
         ) : null}
-        <text x="80" y="81" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 116, 22, 8), letterSpacing: '0.02em' }}>
+        <text x="80" y="81" textAnchor="middle" fill="currentColor" style={{ ...DISPLAY, fontSize: fitSize(t, 116, 22, 7, em), letterSpacing: '0.02em' }}>
           {t}
         </text>
         <text x="80" y="100" textAnchor="middle" fill="currentColor" style={{ ...MONO, fontSize: 10.5, letterSpacing: '0.06em' }}>

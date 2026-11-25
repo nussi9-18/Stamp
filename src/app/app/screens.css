@@ -2,6 +2,7 @@
 
 .booklet {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -37,6 +38,7 @@
 
 .booklet-right {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   min-width: 0;
 }
@@ -313,13 +315,13 @@
   padding: 10px 2px;
 }
 
-@container (min-width: 560px) {
+@container (min-width: 400px) {
   .visa-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 1280px) {
+@container (min-width: 620px) {
   .visa-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1513,6 +1515,12 @@
   letter-spacing: 0;
 }
 
+.w-hero .btn {
+  position: relative;
+  border-color: #f5f1e8;
+  color: #f5f1e8;
+}
+
 .w-hero p {
   position: relative;
   color: #e2dcce;
@@ -1730,6 +1738,7 @@
 }
 
 .manual h2 {
+  text-transform: uppercase;
   font-family: var(--f-display);
   font-weight: 400;
   font-size: 40px;
@@ -1942,4 +1951,168 @@
 .live-card.is-me {
   border-color: var(--rose);
   background: var(--pink-bg);
+}
+
+/* ── Look picker (same in every look; the previews use fixed colours) ── */
+
+.look-sheet {
+  display: grid;
+  gap: 16px;
+}
+
+.looks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.look-card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 10px 10px 14px;
+  border: 2px solid var(--rule2);
+  border-radius: 16px;
+  background: var(--ivory);
+  color: var(--ink);
+  text-align: left;
+  transition: border-color 150ms, transform 120ms var(--ease-out), box-shadow 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.look-card:active {
+  transform: scale(0.98);
+}
+
+.look-card[aria-pressed='true'] {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rose) 28%, transparent);
+}
+
+.look-card strong {
+  margin-top: 4px;
+  font-family: var(--f-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.look-note {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink3);
+}
+
+.look-mini {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.look-mini.is-modern {
+  display: grid;
+  align-content: start;
+  gap: 9%;
+  padding: 11% 9%;
+  background: radial-gradient(90% 70% at 100% 0%, rgba(232, 17, 75, 0.45), transparent 60%), #000;
+}
+
+.look-mini .m-title {
+  display: block;
+  width: 52%;
+  height: 0.6em;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.look-mini .m-row {
+  display: flex;
+  gap: 7%;
+}
+
+.look-mini .m-row b {
+  flex: 1;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #ff6b88, #6b1530);
+}
+
+.look-mini .m-row b:nth-child(2) {
+  background: linear-gradient(160deg, #64b5ff, #123a72);
+}
+
+.look-mini .m-row b:nth-child(3) {
+  background: linear-gradient(160deg, #d1d1d6, #3a3a3c);
+}
+
+.look-mini .m-pill {
+  display: block;
+  width: 44%;
+  height: 0.75em;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.look-mini.is-retro {
+  background-color: #efe5cf;
+  background-image: radial-gradient(rgba(28, 23, 18, 0.12) 0.7px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+.look-mini .r-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 17%;
+  background: #c3272b;
+}
+
+.look-mini .r-poster {
+  position: absolute;
+  top: 26%;
+  left: 9%;
+  width: 30%;
+  aspect-ratio: 2 / 3;
+  border: 2px solid #1c1712;
+  background: linear-gradient(118deg, #1c1712 0 55%, #f2c23a 55%);
+  transform: rotate(-4deg);
+}
+
+.look-mini .r-poster::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 70%;
+  height: 8px;
+  background: rgba(240, 196, 70, 0.75);
+  transform: translateX(-50%) rotate(3deg);
+}
+
+.look-mini .r-stamp {
+  position: absolute;
+  top: 28%;
+  right: 12%;
+  width: 34%;
+  aspect-ratio: 1;
+  border: 3px solid #c3272b;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px #efe5cf, inset 0 0 0 4px #c3272b;
+  transform: rotate(12deg);
+  opacity: 0.85;
+}
+
+.look-mini .r-key {
+  position: absolute;
+  right: 10%;
+  bottom: 11%;
+  width: 40%;
+  height: 15%;
+  border: 2px solid #1c1712;
+  border-radius: 4px;
+  background: #f2c23a;
+  box-shadow: 0 3px 0 #1c1712;
 }

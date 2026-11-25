@@ -651,7 +651,7 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
   const formCls = ['pp-form', form === 'none' ? 'is-hidden' : '', flip === 'out' ? 'flip-out' : flip === 'in' ? 'flip-in' : ''].filter(Boolean).join(' ');
 
   return (
-    <div className={`pc force-day${walking ? ' is-walking' : ''}`}>
+    <div className={`pc${walking ? ' is-walking' : ''}`}>
       <h1 className="sr-only">Passport control — sign in to STAMP</h1>
       <p className="sr-only" role="status" aria-live="polite">
         {status}

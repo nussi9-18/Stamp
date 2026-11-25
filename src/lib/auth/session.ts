@@ -3,14 +3,16 @@
 import { flushSync } from 'react-dom';
 import { PEOPLE } from '../catalog';
 import {
+  applyLook,
   applyTheme,
   closeAllSheets,
   currentUserId,
+  deviceLook,
+  deviceTheme,
   emptyData,
   getState,
   loadUser,
   makePassport,
-  openSheet,
   persistNow,
   replaceData,
   restoreRevealed,
@@ -19,7 +21,7 @@ import {
   type Mode,
   type UserData,
 } from '../store/store';
-import { idbDel, idbSet, lsGet } from '../store/idb';
+import { idbDel, idbSet } from '../store/idb';
 import { hasSupabase } from '../supabase/client';
 import { createProfile, fetchProfile, pullAll, startSync, stopSync } from '../sync/sync';
 import { refreshSocial } from '../sync/social';
@@ -40,6 +42,7 @@ export async function bootApp(): Promise<void> {
   if (booted) return;
   booted = true;
   restoreRevealed();
+  applyLook(deviceLook());
   setState({ online: typeof navigator === 'undefined' ? true : navigator.onLine });
 
   let user: AuthUser | null = null;
@@ -68,7 +71,7 @@ export async function bootApp(): Promise<void> {
       return;
     }
   }
-  applyTheme('day');
+  applyTheme(deviceTheme());
   setState({ boot: 'ready', auth: 'signed-out' });
 }
 
@@ -77,6 +80,7 @@ export function enter(d: UserData) {
   replaceData(d);
   setCurrentUser(d.userId);
   if (d.passport) applyTheme(d.passport.theme);
+  applyLook(d.prefs.look ?? deviceLook());
   setState({ boot: 'ready', auth: 'signed-in', control: null, syncState: d.mode === 'account' ? 'syncing' : 'local' });
   void persistNow();
   if (d.mode === 'account') {
@@ -119,10 +123,9 @@ export async function resolveLocal(): Promise<Resolution> {
 
 /** Issue a brand-new passport (§9.4). */
 export async function issuePassport(res: Extract<Resolution, { kind: 'new' }>, name: string, affinities: string[]): Promise<UserData> {
-  const theme = (lsGet('stamp:theme') as 'day' | 'night' | null) ?? 'day';
   const d = emptyData(res.user.id, res.mode, res.user.email);
   const now = Date.now();
-  d.passport = makePassport(name, affinities, theme === 'night' ? 'night' : 'day');
+  d.passport = makePassport(name, affinities, deviceTheme());
   // New passports follow the six sample citizens so the feed has dispatches from day one.
   for (const p of PEOPLE) d.follows[p.id] = { on: true, updatedAt: now };
   d.sync = { lastPullAt: null, dirtyAt: now, pushedAt: 0 };
@@ -194,7 +197,6 @@ export async function completeSignOut() {
   const d = getState().data;
   if (d?.mode === 'account') await auth().signOut();
   setCurrentUser(null);
-  applyTheme('day');
   replaceData(null, { persist: false });
   setState({ auth: 'signed-out', remote: { people: [], dispatches: [], items: {}, live: [] }, sheets: [], syncState: 'local', revealed: {} });
   try {
@@ -218,7 +220,7 @@ export function walkThrough(data: UserData, isNew: boolean): Promise<void> {
   const finish = () => {
     enter(data);
   };
-  return withViewTransition('vt-walk', finish).then(() => {
-    if (isNew) setTimeout(() => openSheet({ type: 'manual' }), 120);
-  });
+  // New passports are offered a look, then the field manual, by the app shell.
+  void isNew;
+  return withViewTransition('vt-walk', finish);
 }

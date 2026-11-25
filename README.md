@@ -71,6 +71,23 @@ The app is offline-first:
 - Changes push about 1.5 s after an edit. The app also pulls and pushes when it comes back online, when it regains focus or visibility, and every 2 minutes while visible.
 - Settings shows the sync status: "Synced", or "Saved on this device".
 
+## Looks: Modern and Retro
+
+The app has two looks, each in light and dark (4 in all). People pick one after sign-up and can change it in Settings; it's saved with the passport (`prefs.look`) and syncs. The website always uses its own paper style.
+
+| | Modern | Retro |
+| --- | --- | --- |
+| Feel | Clean and calm, like the Apple TV app | An 80s horror-movie night: VHS tapes, screen-printed paper |
+| Type | SF Pro on Apple devices, Inter elsewhere | Anton, Playfair italic, VT323 (VHS on-screen text), Permanent Marker (tape labels) |
+| Controls | Soft rounded buttons, iOS segmented controls | Keys that press down, VCR piano keys, stars punched into a ticket, Dymo-label toasts |
+| Stamping | "Stamp passport" button | Slide the rubber stamp along its rail (tap / Enter also work) |
+| Light / dark | Sun / moon button | Pull the lamp cord (tap / Enter also work) |
+| Dark mode | Black, Apple TV style | A VHS tape on a CRT: scanlines, OSD labels, "● REC" while stamping |
+
+- Tokens live in `src/app/themes/modern.css` and `src/app/themes/retro.css` (`:root[data-look=…][data-theme=…]`); base component CSS stays in `globals.css`, `app/shell.css`, `app/screens.css`.
+- `<html data-look data-theme>` is set before first paint (`src/app/app/layout.tsx`); a first visit follows the system's light or dark setting.
+- Interactions: `SlideAction`, `PullCord`, swipe to turn visa pages; all have tap and keyboard alternatives and respect reduced motion.
+
 ## World archives
 
 Discover searches the 50-work catalog first, then the world archives through `/api/media/search`:

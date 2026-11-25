@@ -25,7 +25,6 @@ import {
   requestSearchFocus,
   setCanon,
   setPref,
-  setTheme,
   toast,
   toggleCanon,
   toggleFollow,
@@ -41,6 +40,7 @@ import { MRZ } from '../../brand/MRZ';
 import { Poster } from '../../brand/Poster';
 import { Avatar, StarsText } from '../../ui/bits';
 import { DispatchSoon } from '../DispatchSoon';
+import { LookChoice, ModeChoice } from '../LookPicker';
 import { NowLine } from '../Now';
 
 /* ── Settings (5.11) ─────────────────────────────────────────────────────── */
@@ -151,15 +151,9 @@ export function SettingsSheet() {
       </form>
 
       <div className="settings-group">
-        <span className="label">Theme</span>
-        <div className="seg seg-block" role="group" aria-label="Theme">
-          <button type="button" aria-pressed={p.theme === 'day'} onClick={() => setTheme('day')}>
-            Day
-          </button>
-          <button type="button" aria-pressed={p.theme === 'night'} onClick={() => setTheme('night')}>
-            Nocturne
-          </button>
-        </div>
+        <span className="label">Look</span>
+        <LookChoice />
+        <ModeChoice />
         <span className="label">Stamp sound</span>
         <div className="seg seg-block" role="group" aria-label="Stamp sound">
           <button type="button" aria-pressed={!d.prefs.sound} onClick={() => setPref('sound', false)}>
@@ -290,7 +284,7 @@ export function ManualSheet() {
   ];
   return (
     <div className="manual">
-      <h2>HOW IT WORKS</h2>
+      <h2>How it works</h2>
       <ol>
         {items.map(([t, d], i) => (
           <li key={t}>

@@ -11,6 +11,7 @@ import type { Person } from '@/lib/types';
 import { MatchRing } from '../../brand/MatchRing';
 import { Avatar } from '../../ui/bits';
 import { NowLine } from '../Now';
+import { PageTitle } from '../PageTitle';
 
 function dayOfYear() {
   const now = new Date();
@@ -36,12 +37,7 @@ export function PeopleScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          KINDRED <em>spirits</em>
-        </h1>
-        <p className="subtitle page-sub">People whose ratings line up with yours, based on what you’ve both stamped.</p>
-      </header>
+      <PageTitle retro={<>KINDRED <em>spirits</em></>} modern="People" sub="People whose ratings line up with yours, based on what you’ve both stamped." />
       <p className="label sample-note">Sample citizens — fictional until real friends join.</p>
 
       {twin ? (

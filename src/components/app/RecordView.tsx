@@ -6,12 +6,13 @@ import { countryName, KIND_LABEL } from '@/lib/catalog';
 import { formatDate, todayISO } from '@/lib/format';
 import { formatTime, LEVEL_NAMES, timeLabel, VECTOR_NAMES } from '@/lib/heat';
 import { DEFAULT_SHIELD, gate } from '@/lib/shield';
-import { getItem, removeStamp, reveal, stampItem, toggleCanon, toggleWishlist, useStore } from '@/lib/store/store';
+import { getItem, removeStamp, reveal, stampItem, toggleCanon, toggleWishlist, useLook, useStore } from '@/lib/store/store';
 import { MOODS, type Mood, type Place, type Rating } from '@/lib/types';
 import { ItemStamp, placeLabel } from '../brand/Stamp';
 import { Poster } from '../brand/Poster';
 import { HeatBox, StarsInput } from '../ui/bits';
 import { NowControl } from './Now';
+import { SlideAction } from './SlideAction';
 
 export function RecordView({ id, onNavigate }: { id: string; onNavigate?: () => void }) {
   const item = useStore((s) => getItem(id, s));
@@ -148,10 +149,11 @@ function StampForm({
   const errId = useId();
   const noteId = useId();
   const formRef = useRef<HTMLFormElement>(null);
+  const look = useLook();
   const today = todayISO();
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  /** Validate and stamp; false when something is missing (the Retro slider slides back). */
+  const attempt = (): boolean => {
     let ok = true;
     if (!rating) {
       setError('Pick a rating from 1 to 5 stars to stamp this.');
@@ -161,11 +163,17 @@ function StampForm({
       setDateError('Pick the day you finished it, up to today.');
       ok = false;
     }
-    if (!ok) return;
+    if (!ok) return false;
     stampItem(itemId, { rating, tags, date, place, note: note.trim() });
     // Bring "In your passport" into view once the overlay clears.
     const scroller = formRef.current?.closest('.sheet-body, .split-pane');
     setTimeout(() => scroller?.scrollTo({ top: 0, behavior: 'smooth' }), 1300);
+    return true;
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    attempt();
   };
 
   return (
@@ -252,10 +260,16 @@ function StampForm({
         </span>
       </label>
 
+      {look === 'retro' ? (
+        <SlideAction label={live ? 'Update stamp' : 'Stamp passport'} hint={live ? 'Slide to restamp' : 'Slide to stamp'} onAction={attempt} />
+      ) : null}
+
       <div className="btn-row">
-        <button type="submit" className="btn btn-pri" style={{ flex: '1 1 200px' }}>
-          {live ? 'Update stamp' : 'Stamp passport'}
-        </button>
+        {look === 'retro' ? null : (
+          <button type="submit" className="btn btn-pri" style={{ flex: '1 1 200px' }}>
+            {live ? 'Update stamp' : 'Stamp passport'}
+          </button>
+        )}
         {!live ? (
           <button type="button" className="btn" onClick={() => toggleWishlist(itemId)} aria-pressed={saved}>
             {saved ? 'Remove from wishlist' : 'Add to wishlist'}

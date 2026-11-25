@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { LEVEL_NAMES, VECTOR_NAMES } from '@/lib/heat';
 import { ACTIONS, DEFAULT_SHIELD, over, PRESETS } from '@/lib/shield';
 import { allItems, setShieldAction, setShieldLimit, setShieldPreset, useStore } from '@/lib/store/store';
+import { PageTitle } from '../PageTitle';
 
 export function ShieldScreen() {
   const shield = useStore((s) => s.data?.passport?.shield ?? DEFAULT_SHIELD);
@@ -12,14 +13,12 @@ export function ShieldScreen() {
 
   return (
     <>
-      <header className="page-head">
-        <h1 className="page-title">
-          COMFORT <em>shield</em>
-        </h1>
-        <p className="subtitle page-sub">
-          Age ratings flatten everything into one number. Here you set your own limit for eight kinds of content, and choose what happens when something goes past it.
-        </p>
-      </header>
+      <PageTitle
+        retro={<>COMFORT <em>shield</em></>}
+        modern="Shield"
+        sub="Set your own limit for eight kinds of content, and choose what happens when something goes past it."
+        keepSub
+      />
 
       <section className="section" style={{ marginTop: 0 }} aria-labelledby="presets-h">
         <div className="section-head">
