@@ -5,7 +5,8 @@ import { FEED, KIND_LABEL, LIVE, PEOPLE_BY_ID } from '@/lib/catalog';
 import { LEVEL_NAMES, VECTOR_NAMES } from '@/lib/heat';
 import { DEFAULT_SHIELD, gate } from '@/lib/shield';
 import { getItem, openSheet, reveal, toggleLike, toggleWishlist, useStore } from '@/lib/store/store';
-import type { Dispatch, Person } from '@/lib/types';
+import type { Dispatch, LiveSession, Person } from '@/lib/types';
+import { liveNow, nowVerb } from '@/lib/now';
 import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
 import { ItemStamp, placeLabel } from '../../brand/Stamp';
@@ -34,7 +35,13 @@ export function FeedScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [remote.dispatches, follows],
   );
-  const live = LIVE.filter((l) => followed(l.p));
+  const myNow = useStore((s) => liveNow(s.data?.now));
+  const myName = useStore((s) => s.data?.passport?.name ?? 'You');
+  const live: LiveSession[] = [
+    ...(myNow ? [{ p: '__me', item: myNow.itemId, pct: myNow.pct, label: myNow.label }] : []),
+    ...remote.live.filter((l) => followed(l.p)),
+    ...LIVE.filter((l) => followed(l.p)),
+  ];
   const anyFollow = Object.values(follows ?? {}).some((f) => f.on);
 
   const withGate = all.map((d) => {
@@ -72,21 +79,24 @@ export function FeedScreen() {
           <div className="live-strip">
             {live.map((l) => {
               const item = getItem(l.item);
-              const p = people[l.p];
+              const me = l.p === '__me';
+              const p = me ? { name: myName } : people[l.p];
               if (!item || !p) return null;
               return (
-                <button key={l.p} type="button" className="live-card" onClick={() => openSheet({ type: 'record', id: item.id })}>
+                <button key={l.p} type="button" className={`live-card${me ? ' is-me' : ''}`} onClick={() => openSheet({ type: 'record', id: item.id })}>
                   <Poster item={item} />
                   <span style={{ minWidth: 0 }}>
                     <span className="label" style={{ display: 'block' }}>
-                      {p.name.split(' ')[0]} · {l.label}
+                      {me ? 'You' : p.name.split(' ')[0]} · {l.label || nowVerb(item.kind)}
                     </span>
                     <span className="display" style={{ display: 'block', marginTop: 6 }}>
                       {item.title}
                     </span>
-                    <span className="progress" role="progressbar" aria-valuenow={l.pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${l.pct}% through`} style={{ display: 'block' }}>
-                      <i style={{ width: `${l.pct}%` }} />
-                    </span>
+                    {l.pct !== null ? (
+                      <span className="progress" role="progressbar" aria-valuenow={l.pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${l.pct}% through`} style={{ display: 'block' }}>
+                        <i style={{ width: `${l.pct}%` }} />
+                      </span>
+                    ) : null}
                   </span>
                 </button>
               );

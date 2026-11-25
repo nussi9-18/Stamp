@@ -3,7 +3,8 @@
 import { ago } from '../format';
 import { supabase } from '../supabase/client';
 import { getState, setState } from '../store/store';
-import type { Dispatch, Item, Person } from '../types';
+import type { Dispatch, Item, LiveSession, Person } from '../types';
+import type { PresenceRow } from './sync';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const AVATARS = ['#F5C6D0', '#7EA8BE', '#E2DCCE', '#B8894A'];
@@ -33,12 +34,13 @@ export async function refreshSocial(): Promise<void> {
     .filter(([id, f]) => f.on && UUID.test(id))
     .map(([id]) => id);
   if (!ids.length) {
-    setState({ remote: { people: [], dispatches: [], items: {} } });
+    setState({ remote: { people: [], dispatches: [], items: {}, live: [] } });
     return;
   }
-  const [cards, rows] = await Promise.all([
+  const [cards, rows, presence] = await Promise.all([
     sb.rpc('passport_cards', { ids }),
     sb.from('dispatches').select('*').in('user_id', ids).order('updated_at', { ascending: false }).limit(200),
+    sb.from('presence').select('*').in('user_id', ids).eq('cleared', false).gt('expires_at', new Date().toISOString()),
   ]);
   if (cards.error || rows.error) return;
   const items: Record<string, Item> = {};
@@ -49,7 +51,11 @@ export async function refreshSocial(): Promise<void> {
     return { id: r.id, p: r.user_id, item: r.item_id, rating: r.rating, place: r.place, date: r.date, ago: ago(Date.parse(r.updated_at)), note: r.note ?? '' };
   });
   const people = ((cards.data ?? []) as Card[]).map((c) => toPerson(c, ratings[c.id] ?? {}));
-  setState({ remote: { people, dispatches, items } });
+  const live: LiveSession[] = ((presence.error ? [] : presence.data ?? []) as PresenceRow[]).map((r) => {
+    if (r.item) items[r.item_id] = { ...r.item, id: r.item_id, custom: true };
+    return { p: r.user_id, item: r.item_id, pct: r.pct, label: r.label };
+  });
+  setState({ remote: { people, dispatches, items, live } });
 }
 
 export type FindResult = { status: 'found'; person: Person } | { status: 'none' } | { status: 'self' } | { status: 'offline' };

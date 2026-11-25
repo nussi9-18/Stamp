@@ -13,6 +13,7 @@ import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
 import { ItemStamp } from '../../brand/Stamp';
 import { DispatchSoon } from '../DispatchSoon';
+import { NowCard } from '../Now';
 
 const PER_PAGE = 12;
 
@@ -34,6 +35,8 @@ export function PassportScreen() {
         </h1>
         <p className="subtitle page-sub">Every film, series, book, game or album you finish gets a stamp.</p>
       </header>
+
+      <NowCard />
 
       {showBanner ? (
         <div className="banner" role="region" aria-label="Save your passport">

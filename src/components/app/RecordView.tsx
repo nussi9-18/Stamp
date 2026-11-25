@@ -11,6 +11,7 @@ import { MOODS, type Mood, type Place, type Rating } from '@/lib/types';
 import { ItemStamp, placeLabel } from '../brand/Stamp';
 import { Poster } from '../brand/Poster';
 import { HeatBox, StarsInput } from '../ui/bits';
+import { NowControl } from './Now';
 
 export function RecordView({ id, onNavigate }: { id: string; onNavigate?: () => void }) {
   const item = useStore((s) => getItem(id, s));
@@ -113,6 +114,8 @@ export function RecordView({ id, onNavigate }: { id: string; onNavigate?: () => 
               </div>
             </div>
           ) : null}
+
+          <NowControl itemId={item.id} kind={item.kind} />
 
           <StampForm key={`${item.id}:${live?.updatedAt ?? 0}`} itemId={item.id} title={item.title} kind={item.kind} live={live} saved={saved} />
         </>

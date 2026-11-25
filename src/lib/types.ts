@@ -116,4 +116,4 @@ export type Dispatch = {
   sample?: boolean;
 };
 
-export type LiveSession = { p: string; item: string; pct: number; label: string };
+export type LiveSession = { p: string; item: string; pct: number | null; label: string };

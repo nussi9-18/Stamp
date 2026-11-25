@@ -1844,3 +1844,94 @@
   font-size: 15px;
   color: var(--ink2);
 }
+
+/* ── Now (live status) ───────────────────────────────────────────────── */
+
+.now-row {
+  display: grid;
+  gap: 8px;
+}
+
+.now-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rose-d);
+  line-height: 1.4;
+}
+
+.now-form {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ink);
+  background: var(--ivory);
+}
+
+.now-form .label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.now-range {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--rose-d);
+}
+
+.now-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--rose);
+  background: var(--pink-bg);
+}
+
+@media (min-width: 560px) {
+  .now-card {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+  }
+}
+
+.now-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rose-d);
+}
+
+.now-title {
+  font-family: var(--f-display);
+  font-size: 22px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.now-actions {
+  display: flex;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 560px) {
+  .now-actions {
+    grid-column: auto;
+  }
+}
+
+.live-card.is-me {
+  border-color: var(--rose);
+  background: var(--pink-bg);
+}

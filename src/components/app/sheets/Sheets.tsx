@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useId, useMemo, useRef, useState } from 'react';
-import { CATALOG_BY_ID, KIND_LABEL, KINDS } from '@/lib/catalog';
+import { CATALOG_BY_ID, KIND_LABEL, KINDS, LIVE } from '@/lib/catalog';
 import { firstName, formatDate } from '@/lib/format';
 import { LB_EMPTY, planImport, readLetterboxd } from '@/lib/letterboxd';
 import { tasteMatch } from '@/lib/match';
@@ -41,6 +41,7 @@ import { MRZ } from '../../brand/MRZ';
 import { Poster } from '../../brand/Poster';
 import { Avatar, StarsText } from '../../ui/bits';
 import { DispatchSoon } from '../DispatchSoon';
+import { NowLine } from '../Now';
 
 /* ── Settings (5.11) ─────────────────────────────────────────────────────── */
 
@@ -437,6 +438,8 @@ export function PersonSheet({ person }: { person: Person }) {
   const m = tasteMatch(mine, person.r);
   const fn = firstName(person.name);
   const canon = person.canon ?? [];
+  const remoteLive = useStore((s) => s.remote.live);
+  const live = following ? (remoteLive.find((l) => l.p === person.id) ?? LIVE.find((l) => l.p === person.id)) : undefined;
   return (
     <div style={{ display: 'grid', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 14, alignItems: 'center' }}>
@@ -451,6 +454,7 @@ export function PersonSheet({ person }: { person: Person }) {
         </div>
         <MatchRing pct={m.pct} />
       </div>
+      {live ? <NowLine itemId={live.item} label={live.label} /> : null}
       <p className="body2">{person.bio}</p>
       {person.sample ? <p className="label">Sample citizen — fictional</p> : null}
 

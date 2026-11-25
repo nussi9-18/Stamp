@@ -196,7 +196,7 @@ export async function completeSignOut() {
   setCurrentUser(null);
   applyTheme('day');
   replaceData(null, { persist: false });
-  setState({ auth: 'signed-out', remote: { people: [], dispatches: [], items: {} }, sheets: [], syncState: 'local', revealed: {} });
+  setState({ auth: 'signed-out', remote: { people: [], dispatches: [], items: {}, live: [] }, sheets: [], syncState: 'local', revealed: {} });
   try {
     sessionStorage.removeItem('stamp:revealed');
   } catch {

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { PEOPLE } from '@/lib/catalog';
+import { LIVE, PEOPLE } from '@/lib/catalog';
 import { firstName } from '@/lib/format';
 import { tasteMatch } from '@/lib/match';
 import { getItem, liveStamps, openSheet, toggleFollow, useStore } from '@/lib/store/store';
@@ -10,6 +10,7 @@ import { findPassportByCode } from '@/lib/sync/social';
 import type { Person } from '@/lib/types';
 import { MatchRing } from '../../brand/MatchRing';
 import { Avatar } from '../../ui/bits';
+import { NowLine } from '../Now';
 
 function dayOfYear() {
   const now = new Date();
@@ -24,6 +25,9 @@ export function PeopleScreen() {
   const mine = useMemo(() => Object.fromEntries(liveStamps(data).map((s) => [s.itemId, s.rating])), [data]);
   const people: Person[] = useMemo(() => [...remotePeople, ...PEOPLE], [remotePeople]);
   const scored = useMemo(() => people.map((p) => ({ p, m: tasteMatch(mine, p.r) })), [people, mine]);
+  const remoteLive = useStore((s) => s.remote.live);
+  // Live status is shown to followers only.
+  const liveFor = (id: string) => (follows?.[id]?.on ? (remoteLive.find((l) => l.p === id) ?? LIVE.find((l) => l.p === id)) : undefined);
   const ranked = [...scored].filter((x) => x.m.pct !== null).sort((a, b) => b.m.pct! - a.m.pct! || b.m.shared.length - a.m.shared.length);
   const twin = ranked[0] ?? scored[dayOfYear() % Math.max(1, scored.length)];
 
@@ -80,6 +84,7 @@ export function PeopleScreen() {
                 </div>
                 <MatchRing pct={m.pct} />
               </div>
+              {liveFor(p.id) ? <NowLine itemId={liveFor(p.id)!.item} label={liveFor(p.id)!.label} /> : null}
               <p className="body2">
                 {p.bio} {m.shared.length} shared {m.shared.length === 1 ? 'stamp' : 'stamps'}.
               </p>

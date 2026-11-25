@@ -54,6 +54,18 @@ type StampRow = {
 type CanonRow = { user_id: string; position: number; item_id: string | null; updated_at: string; synced_at?: string };
 type FlagRow = { user_id: string; key: string; deleted: boolean; updated_at: string; synced_at?: string };
 type CustomRow = { user_id: string; id: string; item: Item; updated_at: string; deleted: boolean; synced_at?: string };
+export type PresenceRow = {
+  user_id: string;
+  item_id: string;
+  item: Item | null;
+  label: string;
+  pct: number | null;
+  started_at: string;
+  expires_at: string;
+  cleared: boolean;
+  updated_at: string;
+  synced_at?: string;
+};
 
 const FLAG_TABLES = {
   wishlist: { table: 'wishlist', col: 'item_id' },
@@ -121,6 +133,7 @@ type Remote = {
   canon: CanonRow[];
   flags: Record<keyof typeof FLAG_TABLES, FlagRow[]>;
   custom: CustomRow[];
+  presence?: PresenceRow | null;
 };
 
 async function fetchRemote(userId: string, since: string | null): Promise<Remote> {
@@ -130,7 +143,7 @@ async function fetchRemote(userId: string, since: string | null): Promise<Remote
     if (since) b = b.gt('synced_at', since);
     return b as unknown as Promise<{ data: T[] | null; error: { message: string } | null }>;
   };
-  const [profile, stamps, canon, wish, follows, likes, custom] = await Promise.all([
+  const [profile, stamps, canon, wish, follows, likes, custom, presence] = await Promise.all([
     q<ProfileRow>('profiles'),
     q<StampRow>('stamps'),
     q<CanonRow>('canon'),
@@ -138,8 +151,10 @@ async function fetchRemote(userId: string, since: string | null): Promise<Remote
     q<{ user_id: string; target: string; deleted: boolean; updated_at: string; synced_at: string }>('follows'),
     q<{ user_id: string; dispatch_id: string; deleted: boolean; updated_at: string; synced_at: string }>('likes'),
     q<CustomRow>('custom_items'),
+    q<PresenceRow>('presence'),
   ]);
   for (const r of [profile, stamps, canon, wish, follows, likes, custom]) if (r.error) throw new Error(r.error.message);
+  // presence is optional: older databases without the table keep syncing everything else
   return {
     profile: profile.data?.[0] ?? null,
     stamps: stamps.data ?? [],
@@ -150,6 +165,7 @@ async function fetchRemote(userId: string, since: string | null): Promise<Remote
       likes: (likes.data ?? []).map((r) => ({ user_id: r.user_id, key: r.dispatch_id, deleted: r.deleted, updated_at: r.updated_at, synced_at: r.synced_at })),
     },
     custom: custom.data ?? [],
+    presence: presence.error ? null : (presence.data?.[0] ?? null),
   };
 }
 
@@ -164,6 +180,7 @@ function maxSynced(r: Remote, prev: string | null): string | null {
     ...r.flags.follows,
     ...r.flags.likes,
     ...r.custom,
+    ...(r.presence ? [r.presence] : []),
   ];
   for (const x of all) {
     const t = ms(x.synced_at);
@@ -219,6 +236,14 @@ export function mergeRemote(d: UserData, r: Remote): UserData {
       if (!local || local.updatedAt < t) next[k][f.key] = { on: !f.deleted, updatedAt: t };
     }
   });
+  if (r.presence) {
+    const p = r.presence;
+    const t = ms(p.updated_at);
+    if (!d.now || d.now.updatedAt < t) {
+      next.now = { itemId: p.item_id, label: p.label, pct: p.pct, startedAt: ms(p.started_at), expiresAt: ms(p.expires_at), updatedAt: t, cleared: p.cleared };
+      if (p.item && !next.custom[p.item_id]) next.custom[p.item_id] = { ...p.item, id: p.item_id, custom: true, updatedAt: t };
+    }
+  }
   for (const c of r.custom) {
     const t = ms(c.updated_at);
     const local = d.custom[c.id];
@@ -316,6 +341,26 @@ async function push(d: UserData): Promise<number> {
       sb.from('custom_items').upsert(
         custom.map(({ updatedAt, deleted, ...item }) => ({ user_id: uid, id: item.id, item, updated_at: iso(updatedAt), deleted: !!deleted })),
         { onConflict: 'user_id,id' },
+      ),
+    );
+  }
+  if (d.now && d.now.updatedAt > since) {
+    const n = d.now;
+    const custom = d.custom[n.itemId];
+    ops.push(
+      sb.from('presence').upsert(
+        {
+          user_id: uid,
+          item_id: n.itemId,
+          item: custom ? { id: custom.id, kind: custom.kind, title: custom.title, year: custom.year, by: custom.by, mins: custom.mins, cc: custom.cc, v: null, log: custom.log } : null,
+          label: n.label,
+          pct: n.pct,
+          started_at: iso(n.startedAt),
+          expires_at: iso(n.expiresAt),
+          cleared: !!n.cleared,
+          updated_at: iso(n.updatedAt),
+        },
+        { onConflict: 'user_id' },
       ),
     );
   }

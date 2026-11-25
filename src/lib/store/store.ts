@@ -5,8 +5,9 @@ import { CATALOG, CATALOG_BY_ID, SEED, SEED_CANON } from '../catalog';
 import { todayISO } from '../format';
 import { newPassportNo } from '../mrz';
 import { DEFAULT_SHIELD, detectPreset, PRESETS } from '../shield';
-import type { Dispatch, Item, Mood, Passport, Person, Place, Rating, Shield, ShieldAction, ShieldPreset, Stamp, Theme } from '../types';
+import type { Dispatch, Item, LiveSession, Mood, Passport, Person, Place, Rating, Shield, ShieldAction, ShieldPreset, Stamp, Theme } from '../types';
 import { idbGet, idbSet, lsGet, lsSet } from './idb';
+import { liveNow, makeNow, nowVerb, type NowStatus } from '../now';
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
 
@@ -37,6 +38,8 @@ export type UserData = {
   likes: Record<string, Flag>;
   custom: Record<string, CustomRec>;
   prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean };
+  /** what this passport is watching / reading / playing / listening to right now */
+  now?: NowStatus | null;
   sync: { lastPullAt: string | null; dirtyAt: number; pushedAt: number };
 };
 
@@ -66,7 +69,7 @@ export type AppState = {
   searchFocus: number;
   online: boolean;
   syncState: SyncState;
-  remote: { people: Person[]; dispatches: Dispatch[]; items: Record<string, Item> };
+  remote: { people: Person[]; dispatches: Dispatch[]; items: Record<string, Item>; live: LiveSession[] };
   /** works found in the world archives this session (TMDB, Open Library, AniList, RAWG, MusicBrainz) */
   world: Record<string, Item>;
   control: ControlIntent | null;
@@ -86,7 +89,7 @@ const initial: AppState = {
   searchFocus: 0,
   online: true,
   syncState: 'local',
-  remote: { people: [], dispatches: [], items: {} },
+  remote: { people: [], dispatches: [], items: {}, live: [] },
   world: {},
   control: null,
   justIssued: false,
@@ -398,7 +401,9 @@ export function stampItem(itemId: string, input: StampInput) {
       deleted: false,
     };
     const wishlist = d.wishlist[itemId]?.on ? { ...d.wishlist, [itemId]: { on: false, updatedAt: now } } : d.wishlist;
-    return { ...d, stamps: { ...d.stamps, [itemId]: rec }, wishlist };
+    // Finishing a work ends its "now" status.
+    const nowStatus = d.now && d.now.itemId === itemId && !d.now.cleared ? { ...d.now, cleared: true, updatedAt: now } : d.now;
+    return { ...d, stamps: { ...d.stamps, [itemId]: rec }, wishlist, now: nowStatus };
   });
   setState({ moment: { itemId, update, key: seq++ } });
 }
@@ -515,6 +520,25 @@ export function toggleFollow(id: string, name?: string): boolean {
 
 export function toggleLike(id: string): boolean {
   return toggleFlag('likes', id);
+}
+
+/* ── Now ─────────────────────────────────────────────────────────────── */
+
+/** Share what you're watching / reading / playing / listening to right now. */
+export function setNow(itemId: string, label: string, pct: number | null) {
+  const item = getItem(itemId);
+  if (!item) return;
+  mutate((d0, now) => {
+    const d = keepWorld(d0, itemId, now);
+    return { ...d, now: makeNow(itemId, item.kind, label, pct, now, d.now) };
+  });
+  toast(`${nowVerb(item.kind)} ${item.title}`);
+}
+
+export function clearNow() {
+  if (!liveNow(state.data?.now)) return;
+  mutate((d, now) => (d.now ? { ...d, now: { ...d.now, cleared: true, updatedAt: now } } : d));
+  toast('Status cleared');
 }
 
 /* ── Custom items ──────────────────────────────────────────────────────── */
