@@ -5,8 +5,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { KIND_LABEL, KINDS } from '@/lib/catalog';
 import { formatTime } from '@/lib/heat';
 import { gate, presetName, overNames, DEFAULT_SHIELD } from '@/lib/shield';
-import { searchItems } from '@/lib/search';
-import { allItems, onIds, openSheet, useStore } from '@/lib/store/store';
+import { norm, searchItems } from '@/lib/search';
+import { allItems, onIds, openSheet, rememberWorld, useStore } from '@/lib/store/store';
 import type { Item, Kind } from '@/lib/types';
 import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
@@ -41,6 +41,39 @@ function useIncremental<T>(list: T[], step = 60) {
     return () => io.disconnect();
   }, [n, list.length, step]);
   return { visible: list.slice(0, n), sentinel, more: n < list.length };
+}
+
+/** Debounced search of the world archives through /api/media/search. */
+function useWorldSearch(q: string, kind?: Kind) {
+  const [state, setState] = useState<{ items: Item[]; loading: boolean; offline: boolean }>({ items: [], loading: false, offline: false });
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) {
+      setState({ items: [], loading: false, offline: false });
+      return;
+    }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setState({ items: [], loading: false, offline: true });
+      return;
+    }
+    const ctrl = new AbortController();
+    setState((s) => ({ ...s, loading: true, offline: false }));
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/media/search?q=${encodeURIComponent(term)}${kind ? `&kind=${kind}` : ''}`, { signal: ctrl.signal });
+        const body = res.ok ? ((await res.json()) as { items: Item[] }) : { items: [] };
+        rememberWorld(body.items);
+        setState({ items: body.items, loading: false, offline: false });
+      } catch (e) {
+        if ((e as DOMException)?.name !== 'AbortError') setState({ items: [], loading: false, offline: !navigator.onLine });
+      }
+    }, 400);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [q, kind]);
+  return state;
 }
 
 export function DiscoverScreen() {
@@ -90,9 +123,46 @@ export function DiscoverScreen() {
 
   const { visible, sentinel, more } = useIncremental(shown);
 
+  const worldOn = mode === 'all' && q.trim().length >= 2;
+  const world = useWorldSearch(worldOn ? q : '', kind === 'all' ? undefined : kind);
+  const worldItems = useMemo(() => {
+    const local = new Set(items.map((i) => `${i.kind}|${norm(i.title)}|${i.year ?? ''}`));
+    return world.items.filter((i) => !local.has(`${i.kind}|${norm(i.title)}|${i.year ?? ''}`) && !items.some((x) => x.id === i.id));
+  }, [world.items, items]);
+
   const open = (id: string) => {
     if (wide) setSelected(id);
     else openSheet({ type: 'record', id });
+  };
+
+  const renderRow = (item: Item) => {
+    const rec = data?.stamps[item.id];
+    const stamped = !!rec && !rec.deleted;
+    const saved = !!data?.wishlist[item.id]?.on;
+    const g = gate(item, shield);
+    const blurred = g.gated && shield.action === 'blur' && !stamped && !revealed[item.id];
+    return (
+      <li key={item.id}>
+        <button type="button" className="drow" onClick={() => open(item.id)} aria-current={wide && selected === item.id ? 'true' : undefined}>
+          <Poster item={item} gated={blurred} />
+          <span style={{ minWidth: 0 }}>
+            <span className="drow-title" style={{ display: 'block' }}>
+              {item.title}
+            </span>
+            <span className="drow-by italic" style={{ display: 'block' }}>
+              {[item.by, item.year].filter(Boolean).join(', ')}
+            </span>
+            <span className="drow-meta">
+              <span className="tag">{KIND_LABEL[item.kind]}</span>
+              {item.mins ? <span className="mono">{formatTime(item)}</span> : null}
+              <HeatChip item={item} />
+              {g.gated && shield.action === 'warn' ? <span className="warn-line">Shield: {overNames(item, shield.limits).join(', ')}</span> : null}
+            </span>
+          </span>
+          <span>{stamped ? <span className="badge-stamped">Stamped</span> : saved ? <span className="badge-saved">Saved</span> : null}</span>
+        </button>
+      </li>
+    );
   };
 
   return (
@@ -168,7 +238,7 @@ export function DiscoverScreen() {
 
           <div className="result-count">
             <span className="label" aria-live="polite">
-              {shown.length} {shown.length === 1 ? 'result' : 'results'}
+              {shown.length} {worldOn ? 'in the catalog' : shown.length === 1 ? 'result' : 'results'}
             </span>
             {hidden > 0 ? (
               <span className="label">
@@ -180,7 +250,7 @@ export function DiscoverScreen() {
             ) : null}
           </div>
 
-          {shown.length === 0 ? (
+          {shown.length === 0 && !world.loading && worldItems.length === 0 ? (
             <div className="empty-state" style={{ justifyItems: 'start', textAlign: 'left' }}>
               {mode === 'wish' && !q ? (
                 <p>Your wishlist is empty. Save something from its record and it lands here.</p>
@@ -195,40 +265,21 @@ export function DiscoverScreen() {
             </div>
           ) : (
             <>
-              <ul className="dlist">
-                {visible.map((item) => {
-                  const rec = data?.stamps[item.id];
-                  const stamped = !!rec && !rec.deleted;
-                  const saved = !!data?.wishlist[item.id]?.on;
-                  const g = gate(item, shield);
-                  const blurred = g.gated && shield.action === 'blur' && !stamped && !revealed[item.id];
-                  return (
-                    <li key={item.id}>
-                      <button type="button" className="drow" onClick={() => open(item.id)} aria-current={wide && selected === item.id ? 'true' : undefined}>
-                        <Poster item={item} gated={blurred} />
-                        <span style={{ minWidth: 0 }}>
-                          <span className="drow-title" style={{ display: 'block' }}>
-                            {item.title}
-                          </span>
-                          <span className="drow-by italic" style={{ display: 'block' }}>
-                            {[item.by, item.year].filter(Boolean).join(', ')}
-                          </span>
-                          <span className="drow-meta">
-                            <span className="tag">{KIND_LABEL[item.kind]}</span>
-                            <span className="mono">{formatTime(item)}</span>
-                            <HeatChip item={item} />
-                            {g.gated && shield.action === 'warn' ? <span className="warn-line">Shield: {overNames(item, shield.limits).join(', ')}</span> : null}
-                          </span>
-                        </span>
-                        <span>
-                          {stamped ? <span className="badge-stamped">Stamped</span> : saved ? <span className="badge-saved">Saved</span> : null}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              {shown.length ? <ul className="dlist">{visible.map(renderRow)}</ul> : null}
               {more ? <div ref={sentinel} style={{ height: 1 }} /> : null}
+              {worldOn ? (
+                <section aria-label="From the world archive" style={{ marginTop: shown.length ? 26 : 0 }}>
+                  <div className="result-count">
+                    <span className="label" style={{ color: 'var(--ink)' }}>
+                      From the world archive
+                    </span>
+                    <span className="label" aria-live="polite">
+                      {world.loading ? 'Searching the archives…' : world.offline ? 'Needs a connection' : `${worldItems.length} ${worldItems.length === 1 ? 'result' : 'results'}`}
+                    </span>
+                  </div>
+                  {worldItems.length ? <ul className="dlist">{worldItems.map(renderRow)}</ul> : null}
+                </section>
+              ) : null}
               <div className="list-end">
                 <p>Can’t find it?</p>
                 <button type="button" className="btn" onClick={() => openSheet({ type: 'add-own', title: q || undefined })}>

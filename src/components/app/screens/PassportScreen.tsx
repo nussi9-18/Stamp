@@ -12,6 +12,7 @@ import { MRZ } from '../../brand/MRZ';
 import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
 import { ItemStamp } from '../../brand/Stamp';
+import { DispatchSoon } from '../DispatchSoon';
 
 const PER_PAGE = 12;
 
@@ -54,6 +55,10 @@ export function PassportScreen() {
           <CanonPanel />
           <VisaPanel stamps={stamps} />
         </div>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <DispatchSoon compact />
       </div>
     </>
   );

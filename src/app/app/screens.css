@@ -1769,3 +1769,78 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ── Mystery dispatch: coming soon ───────────────────────────────────── */
+
+.soon {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 20px 20px 22px;
+  border: 1px dashed var(--ink);
+  background: var(--ivory);
+  overflow: hidden;
+}
+
+.settings .soon {
+  padding: 16px;
+}
+
+.soon-stamp {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  width: clamp(110px, 30%, 150px);
+  pointer-events: none;
+}
+
+.soon-title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  padding-right: clamp(100px, 32%, 150px);
+}
+
+.soon-title em {
+  font-family: var(--f-italic);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.soon > .body2 {
+  max-width: 520px;
+  padding-right: 8px;
+}
+
+.soon-tiers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.soon-tiers li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--rule2);
+}
+
+.soon-tiers strong {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: 19px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.soon-tiers span {
+  font-size: 15px;
+  color: var(--ink2);
+}

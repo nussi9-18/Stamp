@@ -29,6 +29,8 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 | `ANTHROPIC_MODEL` | Optional. Defaults to `claude-opus-5-5` |
 | `ANTHROPIC_EFFORT` | Optional: `low`, `medium` (the default) or `high`. Use `low` for faster answers |
 | `NEXT_PUBLIC_SITE_URL` | Optional. Base URL for metadata |
+| `TMDB_API_KEY` | Films and series from TMDB in Discover search |
+| `RAWG_API_KEY` | Games from RAWG in Discover search |
 
 ## Supabase setup
 
@@ -62,6 +64,31 @@ The app is offline-first:
 - IndexedDB is the source of truth for the UI.
 - Changes push about 1.5 s after an edit. The app also pulls and pushes when it comes back online, when it regains focus or visibility, and every 2 minutes while visible.
 - Settings shows the sync status: "Synced", or "Saved on this device".
+
+## World archives
+
+Discover searches the 50-work catalog first, then the world archives through `/api/media/search`:
+
+| Kind | Source | Key |
+| --- | --- | --- |
+| Films, series | TMDB (and anime from AniList) | `TMDB_API_KEY` |
+| Books | Open Library | none |
+| Manga | AniList | none |
+| Games | RAWG | `RAWG_API_KEY` |
+| Albums | MusicBrainz | none |
+
+- A source without a key is simply skipped; a failing source never breaks the others.
+- Results are cached at the edge for a day.
+- An archive work is saved into the passport (as a custom item, so it syncs) only when it's stamped or wishlisted.
+- Archive works have no heat vectors, so they show "No heat data" and the comfort shield doesn't gate them.
+
+## Mystery dispatch (coming soon)
+
+The monthly box is not on sale. The app shows it as "Coming soon" with a **Notify me** button, and the website shows the tiers without prices. Interest is saved in the passport's prefs, which sync to `profiles.prefs` for account holders. To count it:
+
+```sql
+select count(*) from profiles where prefs->>'dispatchInterest' = 'true';
+```
 
 ## The AI tools
 

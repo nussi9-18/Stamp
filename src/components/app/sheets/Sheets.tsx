@@ -40,6 +40,7 @@ import { MatchRing } from '../../brand/MatchRing';
 import { MRZ } from '../../brand/MRZ';
 import { Poster } from '../../brand/Poster';
 import { Avatar, StarsText } from '../../ui/bits';
+import { DispatchSoon } from '../DispatchSoon';
 
 /* ── Settings (5.11) ─────────────────────────────────────────────────────── */
 
@@ -226,6 +227,10 @@ export function SettingsSheet() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="settings-group">
+        <DispatchSoon />
       </div>
 
       <div className="settings-group">

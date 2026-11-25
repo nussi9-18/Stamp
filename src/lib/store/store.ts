@@ -36,7 +36,7 @@ export type UserData = {
   follows: Record<string, Flag>;
   likes: Record<string, Flag>;
   custom: Record<string, CustomRec>;
-  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean };
+  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean };
   sync: { lastPullAt: string | null; dirtyAt: number; pushedAt: number };
 };
 
@@ -67,6 +67,8 @@ export type AppState = {
   online: boolean;
   syncState: SyncState;
   remote: { people: Person[]; dispatches: Dispatch[]; items: Record<string, Item> };
+  /** works found in the world archives this session (TMDB, Open Library, AniList, RAWG, MusicBrainz) */
+  world: Record<string, Item>;
   control: ControlIntent | null;
   /** set while a passport is being issued / admitted so the shell can play the field manual after */
   justIssued: boolean;
@@ -85,6 +87,7 @@ const initial: AppState = {
   online: true,
   syncState: 'local',
   remote: { people: [], dispatches: [], items: {} },
+  world: {},
   control: null,
   justIssued: false,
 };
@@ -198,7 +201,21 @@ export function currentUserId(): string | null {
 /* ── Selectors / helpers ───────────────────────────────────────────────── */
 
 export function getItem(id: string, s: AppState = state): Item | undefined {
-  return CATALOG_BY_ID[id] ?? (s.data?.custom[id] && !s.data.custom[id].deleted ? s.data.custom[id] : undefined) ?? s.remote.items[id];
+  return CATALOG_BY_ID[id] ?? (s.data?.custom[id] && !s.data.custom[id].deleted ? s.data.custom[id] : undefined) ?? s.world[id] ?? s.remote.items[id];
+}
+
+/** Keep archive results around so their records open; they are saved only when stamped or wishlisted. */
+export function rememberWorld(items: Item[]) {
+  if (!items.length) return;
+  setState((s) => ({ world: { ...s.world, ...Object.fromEntries(items.map((i) => [i.id, i])) } }));
+}
+
+/** Copy an archive work into the passport's own list so it survives reloads and syncs. */
+function keepWorld(d: UserData, id: string, now: number): UserData {
+  if (CATALOG_BY_ID[id] || (d.custom[id] && !d.custom[id].deleted)) return d;
+  const w = state.world[id] ?? state.remote.items[id];
+  if (!w) return d;
+  return { ...d, custom: { ...d.custom, [id]: { ...w, custom: true, updatedAt: now } } };
 }
 
 export function allItems(s: AppState = state): Item[] {
@@ -366,7 +383,8 @@ export type StampInput = { rating: Rating; tags: Mood[]; date: string; place: Pl
 export function stampItem(itemId: string, input: StampInput) {
   const existing = state.data?.stamps[itemId];
   const update = !!existing && !existing.deleted;
-  mutate((d, now) => {
+  mutate((d0, now) => {
+    const d = keepWorld(d0, itemId, now);
     const prev = d.stamps[itemId];
     const rec: StampRec = {
       itemId,
@@ -483,6 +501,7 @@ function toggleFlag(key: 'wishlist' | 'follows' | 'likes', id: string, on?: bool
 }
 
 export function toggleWishlist(id: string): boolean {
+  mutate((d, now) => keepWorld(d, id, now));
   const on = toggleFlag('wishlist', id);
   toast(on ? 'Saved to wishlist' : 'Removed from wishlist');
   return on;

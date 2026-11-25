@@ -19,8 +19,10 @@ export type Item = {
   v: HeatVector | null;
   /** one-line plain-language description */
   log: string;
-  /** added by the user / imported */
+  /** added by the user / imported / found in a world archive */
   custom?: boolean;
+  /** where an external work came from: tmdb, openlibrary, anilist, rawg, musicbrainz */
+  source?: string;
 };
 
 export type Place = 'home' | 'out' | 'event';

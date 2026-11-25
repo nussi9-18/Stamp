@@ -41,10 +41,10 @@ export function clientIp(req: Request): string {
   return (req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('x-real-ip') || 'local').trim();
 }
 
-export function allow(ip: string): boolean {
+export function allow(ip: string, perMinute = PER_IP): boolean {
   const now = Date.now();
   const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (list.length >= PER_IP) {
+  if (list.length >= perMinute) {
     hits.set(ip, list);
     return false;
   }

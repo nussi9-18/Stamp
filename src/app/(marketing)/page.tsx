@@ -339,8 +339,7 @@ export default function Home() {
               <span className="label">Tier A</span>
               <h3>Matinee pouch</h3>
               <div className="price">
-                <b>$19</b>
-                <span className="label">/month</span>
+                <span className="concept">Coming soon</span>
               </div>
               <ul>
                 <li>Two cinema tickets</li>
@@ -352,8 +351,7 @@ export default function Home() {
               <span className="label">Tier B</span>
               <h3>Repertory crate</h3>
               <div className="price">
-                <b>$39</b>
-                <span className="label">/month</span>
+                <span className="concept">Coming soon</span>
               </div>
               <ul>
                 <li>A Blu-ray from your wishlist</li>
