@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { liveNow, makeNow, NOW_TTL, nowVerb, since } from '../src/lib/now';
-import { mergeRemote } from '../src/lib/sync/sync';
+import { isMissingTable, mergeRemote } from '../src/lib/sync/sync';
 import { emptyData } from '../src/lib/store/store';
 
 describe('now status', () => {
@@ -40,5 +40,11 @@ describe('now status', () => {
     expect(m.now?.itemId).toBe('severance');
     const older = mergeRemote(m, { profile: null, stamps: [], canon: [], flags: { wishlist: [], follows: [], likes: [] }, custom: [], presence: { ...row, item_id: 'cure', updated_at: '2026-11-25T08:00:00Z' } });
     expect(older.now?.itemId).toBe('severance');
+  });
+  it('treats only a missing presence table as optional when pushing', () => {
+    expect(isMissingTable({ code: 'PGRST205' })).toBe(true);
+    expect(isMissingTable({ code: '42P01' })).toBe(true);
+    expect(isMissingTable({ code: '42501' })).toBe(false); // an RLS violation still fails the sync
+    expect(isMissingTable(null)).toBe(false);
   });
 });

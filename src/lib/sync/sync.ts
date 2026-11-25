@@ -261,6 +261,11 @@ export async function pullAll(userId: string, email?: string): Promise<UserData>
   return merged;
 }
 
+/** PostgREST "table not in schema cache" (PGRST205) or Postgres "undefined table" (42P01). */
+export function isMissingTable(e: { code?: string } | null | undefined): boolean {
+  return e?.code === 'PGRST205' || e?.code === '42P01';
+}
+
 async function push(d: UserData): Promise<number> {
   const sb = supabase()!;
   const since = d.sync.pushedAt;
@@ -344,29 +349,31 @@ async function push(d: UserData): Promise<number> {
       ),
     );
   }
+  // "Now" goes up on its own, so a database without the presence table (migration not applied yet)
+  // doesn't fail the sync of everything else.
+  let presence: PromiseLike<{ error: { message: string; code?: string } | null }> | null = null;
   if (d.now && d.now.updatedAt > since) {
     const n = d.now;
     const custom = d.custom[n.itemId];
-    ops.push(
-      sb.from('presence').upsert(
-        {
-          user_id: uid,
-          item_id: n.itemId,
-          item: custom ? { id: custom.id, kind: custom.kind, title: custom.title, year: custom.year, by: custom.by, mins: custom.mins, cc: custom.cc, v: null, log: custom.log } : null,
-          label: n.label,
-          pct: n.pct,
-          started_at: iso(n.startedAt),
-          expires_at: iso(n.expiresAt),
-          cleared: !!n.cleared,
-          updated_at: iso(n.updatedAt),
-        },
-        { onConflict: 'user_id' },
-      ),
+    presence = sb.from('presence').upsert(
+      {
+        user_id: uid,
+        item_id: n.itemId,
+        item: custom ? { id: custom.id, kind: custom.kind, title: custom.title, year: custom.year, by: custom.by, mins: custom.mins, cc: custom.cc, v: null, log: custom.log } : null,
+        label: n.label,
+        pct: n.pct,
+        started_at: iso(n.startedAt),
+        expires_at: iso(n.expiresAt),
+        cleared: !!n.cleared,
+        updated_at: iso(n.updatedAt),
+      },
+      { onConflict: 'user_id' },
     );
   }
-  const results = await Promise.all(ops);
+  const [results, pres] = await Promise.all([Promise.all(ops), presence]);
   const failed = results.find((r) => r.error);
   if (failed?.error) throw new Error(failed.error.message);
+  if (pres?.error && !isMissingTable(pres.error)) throw new Error(pres.error.message);
   return startedAt;
 }
 

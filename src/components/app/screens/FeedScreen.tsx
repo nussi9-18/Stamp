@@ -6,8 +6,9 @@ import { LEVEL_NAMES, VECTOR_NAMES } from '@/lib/heat';
 import { DEFAULT_SHIELD, gate } from '@/lib/shield';
 import { getItem, openSheet, reveal, toggleLike, toggleWishlist, useStore } from '@/lib/store/store';
 import type { Dispatch, LiveSession, Person } from '@/lib/types';
-import { liveNow, nowVerb } from '@/lib/now';
+import { nowVerb } from '@/lib/now';
 import { Icon } from '../../brand/Icon';
+import { useMyNow } from '../Now';
 import { Poster } from '../../brand/Poster';
 import { ItemStamp, placeLabel } from '../../brand/Stamp';
 import { Avatar } from '../../ui/bits';
@@ -35,7 +36,7 @@ export function FeedScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [remote.dispatches, follows],
   );
-  const myNow = useStore((s) => liveNow(s.data?.now));
+  const myNow = useMyNow();
   const myName = useStore((s) => s.data?.passport?.name ?? 'You');
   const live: LiveSession[] = [
     ...(myNow ? [{ p: '__me', item: myNow.itemId, pct: myNow.pct, label: myNow.label }] : []),
@@ -86,7 +87,7 @@ export function FeedScreen() {
                 <button key={l.p} type="button" className={`live-card${me ? ' is-me' : ''}`} onClick={() => openSheet({ type: 'record', id: item.id })}>
                   <Poster item={item} />
                   <span style={{ minWidth: 0 }}>
-                    <span className="label" style={{ display: 'block' }}>
+                    <span className="label live-label">
                       {me ? 'You' : p.name.split(' ')[0]} · {l.label || nowVerb(item.kind)}
                     </span>
                     <span className="display" style={{ display: 'block', marginTop: 6 }}>

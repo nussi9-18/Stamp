@@ -37,10 +37,10 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 1. Create a project, then apply the schema and the catalog seed:
    ```bash
    supabase link --project-ref <ref>
-   supabase db push                      # supabase/migrations/*_init.sql
+   supabase db push                      # every file in supabase/migrations/, in order
    psql "$DATABASE_URL" -f supabase/seed.sql
    ```
-   You can also paste both files into the SQL editor.
+   You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
 2. **Authentication → Providers**: enable **Email** with "Confirm email", and set the OTP length to 6. To enable **Apple** and **Google**, add each provider's client ID and secret.
 3. **Authentication → Email templates → Magic link**: include **both** the code and the link, so one email serves the 6-digit code and the "Email me a link instead" path:
    ```html
@@ -51,8 +51,8 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 
 ### What the schema does
 
-- **Tables:** `profiles`, `items` (the seeded catalog), `custom_items`, `stamps`, `canon`, `wishlist`, `follows`, `likes`, `dispatches`.
-- **Row Level Security:** each user reads and writes only their own rows. The exception is `dispatches`, which the people who follow you can read.
+- **Tables:** `profiles`, `items` (the seeded catalog), `custom_items`, `stamps`, `canon`, `wishlist`, `follows`, `likes`, `dispatches`, `presence` (the "Now" status: one row per person, which expires on its own).
+- **Row Level Security:** each user reads and writes only their own rows. The exceptions are `dispatches` and `presence`, which the people who follow you can read.
 - **Public passport fields:** a follower reads them through `passport_cards(ids)`. Search by passport code goes through `find_passport(code)`.
 - **Conflict handling:** a trigger keeps the newer write, comparing `updated_at` (last write wins). It also stamps `synced_at` with the server clock. Clients pull by `synced_at`, so a device with a slow clock is never skipped.
 - **Tested:** the schema and RLS were checked against PostgreSQL 16, covering cross-user isolation, follower-only dispatches, last-write-wins and unique passport numbers.

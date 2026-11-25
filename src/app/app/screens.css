@@ -801,6 +801,15 @@
   line-height: 1;
 }
 
+/* A long status ("Second viewing, the garden scene…") keeps the card two lines tall. */
+.live-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
 .progress {
   height: 4px;
   background: var(--rule);
@@ -1764,10 +1773,9 @@
   gap: 16px;
 }
 
-@media (min-width: 560px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr 1fr;
-  }
+/* Two columns only when the container has room (a record in the split pane is ~300px wide even on a laptop). */
+.form-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
 }
 
 /* ── Mystery dispatch: coming soon ───────────────────────────────────── */

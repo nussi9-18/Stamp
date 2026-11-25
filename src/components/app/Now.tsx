@@ -1,14 +1,30 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { liveNow, NOW_TTL, nowPlaceholder, nowVerb, since } from '@/lib/now';
 import { clearNow, getItem, openSheet, setNow, useStore } from '@/lib/store/store';
 import type { Kind } from '@/lib/types';
 import { Poster } from '../brand/Poster';
 
+/** Re-renders once a minute, so "for 12 min" moves on and an expired status goes away without a reload. */
+export function useMinute(): number {
+  const [at, setAt] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setAt(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return at;
+}
+
+/** Your own live status, re-checked every minute. */
+export function useMyNow() {
+  useMinute();
+  return liveNow(useStore((s) => s.data?.now));
+}
+
 /** In a record: share that you're watching / reading / playing / listening to it right now. */
 export function NowControl({ itemId, kind }: { itemId: string; kind: Kind }) {
-  const now = useStore((s) => liveNow(s.data?.now));
+  const now = useMyNow();
   const mine = !!now && now.itemId === itemId;
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(mine ? now!.label : '');
@@ -85,7 +101,7 @@ export function NowControl({ itemId, kind }: { itemId: string; kind: Kind }) {
 
 /** On the passport: your live status, with Update and Stop. */
 export function NowCard() {
-  const now = useStore((s) => liveNow(s.data?.now));
+  const now = useMyNow();
   const item = useStore((s) => (now ? getItem(now.itemId, s) : undefined));
   if (!now || !item) return null;
   return (
