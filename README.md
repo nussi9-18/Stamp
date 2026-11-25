@@ -40,7 +40,7 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
    supabase db push                      # every file in supabase/migrations/, in order
    psql "$DATABASE_URL" -f supabase/seed.sql
    ```
-   You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
+   You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), `20261125000100_api_grants.sql` (Data API access, needed when "Grant API access to new tables automatically" was left off), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
 2. **Authentication → Providers**: enable **Email** with "Confirm email", and set the OTP length to 6. To enable **Apple** and **Google**, add each provider's client ID and secret.
 3. **Authentication → Email templates → Magic link**: include **both** the code and the link, so one email serves the 6-digit code and the "Email me a link instead" path:
    ```html
