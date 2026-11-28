@@ -10,7 +10,7 @@ import { AFFINITIES } from '@/lib/types';
 import { AppleMark, GoogleMark } from '../brand/Icon';
 import { Seal } from '../brand/Seal';
 import { StampArt } from '../brand/Stamp';
-import { playThunk } from '../app/AppShell';
+import { sfx } from '@/lib/sound';
 import './control.css';
 
 /** All Passport Control timings in one place (ms) so they can be tuned (§9.8). */
@@ -155,7 +155,8 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
   const skip = useRef<{ fired: boolean; cut?: () => void }>({ fired: false });
   const startedExit = useRef(false);
   const startedReturn = useRef(false);
-  const soundOn = useRef(false);
+  // Sounds follow the passport's setting once we know whose passport it is (on for new passports).
+  const soundOn = useRef(true);
 
   /* ── helpers ─────────────────────────────────────────────── */
 
@@ -173,6 +174,7 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
   );
 
   const doShake = () => {
+    if (soundOn.current) sfx('error');
     if (reduce) return;
     setShake(false);
     requestAnimationFrame(() => setShake(true));
@@ -187,13 +189,13 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
     );
   };
 
-  const impact = () => {
+  const impact = (kind: 'stamp' | 'stamp-soft' = 'stamp') => {
     try {
       navigator.vibrate?.([18, 40, 30]);
     } catch {
       /* ignore */
     }
-    if (soundOn.current) playThunk();
+    if (soundOn.current) sfx(kind);
     if (reduce) return;
     setThud(false);
     requestAnimationFrame(() => setThud(true));
@@ -262,7 +264,7 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
   /** 9.3 Success — returning user ("ADMITTED"), ≈3.2s, skippable by tap after 1.4s. */
   const runAdmitted = async (data: UserData) => {
     busyRef.current = true;
-    soundOn.current = !!data.prefs.sound;
+    soundOn.current = data.prefs.sfx !== 'off';
     skip.current = { fired: false };
     setHolder({ ...fullHolder(data), mrzTyped: 0 });
     setChecking(false);
@@ -271,6 +273,7 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
     setStatus('Papers checked. Admitted.');
     pressSeal();
     await sleep(T.press);
+    if (soundOn.current) sfx('open');
     setOpen(true);
     const skipTimer = setTimeout(() => setSkippable(true), T.skipAfter - T.press);
     await sleep(reduce ? 200 : T.hinge);
@@ -316,6 +319,7 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
     setStatus('Issuing your passport.');
     pressSeal();
     await sleep(T.press);
+    if (soundOn.current) sfx('open');
     setOpen(true);
     await sleep(reduce ? 200 : T.hinge);
 
@@ -361,11 +365,11 @@ export function PassportControl({ intent }: { intent: ControlIntent | null }) {
     if (intent?.kind !== 'exit' || startedExit.current) return;
     startedExit.current = true;
     (async () => {
-      soundOn.current = !!getState().data?.prefs.sound;
+      soundOn.current = getState().data?.prefs.sfx !== 'off';
       await sleep(380);
       setStamp('exit');
       await sleep(reduce ? 200 : T.impact);
-      impact();
+      impact('stamp-soft');
       await sleep(reduce ? 0 : T.exitSlam - T.impact + 260);
       await completeSignOut();
       setClosing(true);

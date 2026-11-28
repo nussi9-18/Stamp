@@ -39,6 +39,7 @@ export function DispatchSoon({ compact = false }: { compact?: boolean }) {
         <button
           type="button"
           className="btn btn-pri"
+          data-sfx="success"
           onClick={() => {
             setPref('dispatchInterest', true);
             toast('You’re on the list');

@@ -13,6 +13,7 @@ import { Poster } from '../brand/Poster';
 import { HeatBox, StarsInput } from '../ui/bits';
 import { NowControl } from './Now';
 import { SlideAction } from './SlideAction';
+import { sfx } from '@/lib/sound';
 
 export function RecordView({ id, onNavigate }: { id: string; onNavigate?: () => void }) {
   const item = useStore((s) => getItem(id, s));
@@ -163,7 +164,10 @@ function StampForm({
       setDateError('Pick the day you finished it, up to today.');
       ok = false;
     }
-    if (!ok) return false;
+    if (!ok) {
+      if (look !== 'retro') sfx('error');
+      return false;
+    }
     stampItem(itemId, { rating, tags, date, place, note: note.trim() });
     // Bring "In your passport" into view once the overlay clears.
     const scroller = formRef.current?.closest('.sheet-body, .split-pane');

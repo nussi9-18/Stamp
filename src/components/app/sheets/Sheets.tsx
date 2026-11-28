@@ -41,6 +41,7 @@ import { Poster } from '../../brand/Poster';
 import { Avatar, StarsText } from '../../ui/bits';
 import { DispatchSoon } from '../DispatchSoon';
 import { LookChoice, ModeChoice } from '../LookPicker';
+import { sfx } from '@/lib/sound';
 import { NowLine } from '../Now';
 
 /* ── Settings (5.11) ─────────────────────────────────────────────────────── */
@@ -154,13 +155,21 @@ export function SettingsSheet() {
         <span className="label">Look</span>
         <LookChoice />
         <ModeChoice />
-        <span className="label">Stamp sound</span>
-        <div className="seg seg-block" role="group" aria-label="Stamp sound">
-          <button type="button" aria-pressed={!d.prefs.sound} onClick={() => setPref('sound', false)}>
+        <span className="label">Sounds</span>
+        <div className="seg seg-block" role="group" aria-label="Sounds">
+          <button type="button" aria-pressed={d.prefs.sfx === 'off'} onClick={() => setPref('sfx', 'off')}>
             Off
           </button>
-          <button type="button" aria-pressed={d.prefs.sound} onClick={() => setPref('sound', true)}>
-            Soft thunk
+          <button
+            type="button"
+            data-sfx="none"
+            aria-pressed={d.prefs.sfx !== 'off'}
+            onClick={() => {
+              setPref('sfx', 'on');
+              sfx('stamp', { force: true });
+            }}
+          >
+            On
           </button>
         </div>
         <Link href="/app/shield" className="btn" onClick={closeAllSheets}>

@@ -8,6 +8,7 @@ import { claimLookPrompt, endMoment, getItem, getState, openSheet, requestSearch
 import { Icon, type IconName } from '../brand/Icon';
 import { Seal } from '../brand/Seal';
 import { ItemStamp, stampLook } from '../brand/Stamp';
+import { sfx } from '@/lib/sound';
 import { PullCord } from './PullCord';
 import { SheetHost } from './sheets/SheetHost';
 
@@ -48,6 +49,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [thud]);
 
   const look = useLook();
+  const night = theme === 'night';
+  // Changing pages in Retro: a VHS tape going in at night, paper by day.
+  const firstPath = useRef(pathname);
+  useEffect(() => {
+    if (firstPath.current === pathname) return;
+    firstPath.current = pathname;
+    if (look === 'retro') sfx(night ? 'tape' : 'page');
+  }, [pathname, look, night]);
   // Passports that haven't picked a look yet get the choice once (new ones then read the field manual).
   const needsLook = useStore((s) => !!s.data?.passport && !s.data.prefs.look);
   useEffect(() => {
@@ -87,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {look === 'retro' ? (
             <PullCord />
           ) : (
-            <button type="button" className="icon-btn" onClick={toggleTheme} aria-pressed={theme === 'night'} aria-label={theme === 'night' ? 'Light mode' : 'Dark mode'}>
+            <button type="button" className="icon-btn" data-sfx="toggle" onClick={toggleTheme} aria-pressed={theme === 'night'} aria-label={theme === 'night' ? 'Light mode' : 'Dark mode'}>
               <Icon name={theme === 'night' ? 'sun' : 'moon'} />
             </button>
           )}
@@ -134,7 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="label">{theme === 'night' ? 'Pull for light' : 'Pull for dark'}</span>
             </div>
           ) : (
-            <button type="button" className="btn" onClick={toggleTheme} aria-pressed={theme === 'night'}>
+            <button type="button" className="btn" data-sfx="toggle" onClick={toggleTheme} aria-pressed={theme === 'night'}>
               <Icon name={theme === 'night' ? 'sun' : 'moon'} size={16} />
               {theme === 'night' ? 'Light mode' : 'Dark mode'}
             </button>
@@ -192,10 +201,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 export function Toast() {
   const t = useStore((s) => s.toast);
+  const lastKey = useRef(0);
+  // Each new toast prints with a sound (a Dymo label in Retro, a soft pop in Modern).
+  const toastSound = (el: HTMLDivElement | null) => {
+    if (el && t && lastKey.current !== t.key) {
+      lastKey.current = t.key;
+      sfx('toast');
+    }
+  };
   return (
     <div aria-live="polite" role="status" className="sr-only-wrap">
       {t ? (
-        <div className="toast" key={t.key}>
+        <div className="toast" key={t.key} ref={toastSound}>
           {t.text}
         </div>
       ) : null}
@@ -207,7 +224,6 @@ export function Toast() {
 function StampMoment() {
   const moment = useStore((s) => s.moment);
   const stamp = useStore((s) => (s.moment ? s.data?.stamps[s.moment.itemId] : undefined));
-  const sound = useStore((s) => s.data?.prefs.sound ?? false);
   const [out, setOut] = useState(false);
   const played = useRef(0);
 
@@ -222,7 +238,7 @@ function StampMoment() {
       } catch {
         /* ignore */
       }
-      if (sound) playThunk();
+      sfx('stamp');
     }, reduce ? 0 : 220);
     const t2 = setTimeout(() => setOut(true), 1250);
     const t3 = setTimeout(() => {
@@ -234,7 +250,7 @@ function StampMoment() {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [moment, sound]);
+  }, [moment]);
 
   if (!moment || !stamp) return null;
   const item = getItem(moment.itemId);
@@ -256,27 +272,3 @@ function StampMoment() {
   );
 }
 
-let audioCtx: AudioContext | null = null;
-/** Optional soft "thunk" (off by default, toggle in Settings). Synthesised — no audio file. */
-export function playThunk() {
-  try {
-    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AC) return;
-    audioCtx = audioCtx ?? new AC();
-    const ctx = audioCtx;
-    const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(140, t);
-    osc.frequency.exponentialRampToValueAtTime(48, t + 0.16);
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.25);
-  } catch {
-    /* ignore */
-  }
-}

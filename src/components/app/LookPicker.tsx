@@ -7,7 +7,7 @@ export function LookChoice() {
   const look = useLook();
   return (
     <div className="looks" role="group" aria-label="Look">
-      <button type="button" className="look-card" aria-pressed={look === 'modern'} onClick={() => setLook('modern')}>
+      <button type="button" className="look-card" data-sfx="success" aria-pressed={look === 'modern'} onClick={() => setLook('modern')}>
         <span className="look-mini is-modern" aria-hidden="true">
           <i className="m-title" />
           <span className="m-row">
@@ -20,7 +20,7 @@ export function LookChoice() {
         <strong>Modern</strong>
         <span className="look-note">Clean and calm.</span>
       </button>
-      <button type="button" className="look-card" aria-pressed={look === 'retro'} onClick={() => setLook('retro')}>
+      <button type="button" className="look-card" data-sfx="success" aria-pressed={look === 'retro'} onClick={() => setLook('retro')}>
         <span className="look-mini is-retro" aria-hidden="true">
           <i className="r-band" />
           <b className="r-poster" />

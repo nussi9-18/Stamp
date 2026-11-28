@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { sfx } from '@/lib/sound';
 import { useLook } from '@/lib/store/store';
 import { Seal } from '../brand/Seal';
 
@@ -44,6 +45,7 @@ function Slider({ label, hint, onAction, className }: { label: string; hint: str
     busy.current = true;
     setMode('done');
     setX(max());
+    sfx('slide');
     try {
       navigator.vibrate?.(15);
     } catch {
@@ -53,6 +55,7 @@ function Slider({ label, hint, onAction, className }: { label: string; hint: str
       () => {
         const ok = onAction();
         if (ok === false) {
+          sfx('error');
           setMode('idle');
           setX(0);
           setShake(true);
@@ -112,6 +115,7 @@ function Slider({ label, hint, onAction, className }: { label: string; hint: str
         ref={knob}
         type="button"
         className="slide-knob"
+        data-sfx="none"
         aria-label={label}
         style={{ transform: `translateX(${x}px)` }}
         onPointerDown={onPointerDown}

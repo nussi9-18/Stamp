@@ -15,6 +15,7 @@ import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
 import { PageTitle } from '../PageTitle';
+import { sfx } from '@/lib/sound';
 
 type Draft = { name: string; likes: string; favourites: string; ceiling: number };
 const EMPTY: Draft = { name: '', likes: '', favourites: '', ceiling: 3 };
@@ -79,6 +80,7 @@ export function DiplomatScreen() {
     const valid = people.filter((p) => p.name.trim() && (p.likes.trim() || p.favourites.trim()));
     if (valid.length < 2) {
       setError('Add at least two people, each with a name and what they like or a favourite.');
+      sfx('error');
       return;
     }
     abort.current?.abort();
@@ -95,6 +97,7 @@ export function DiplomatScreen() {
       );
       setResult(out.result);
       setNote(out.note);
+      sfx('success');
     } catch {
       /* aborted */
     } finally {

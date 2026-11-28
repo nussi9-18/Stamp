@@ -11,6 +11,7 @@ import { Icon } from '../../brand/Icon';
 import { Poster } from '../../brand/Poster';
 import { Seal } from '../../brand/Seal';
 import { PageTitle } from '../PageTitle';
+import { sfx } from '@/lib/sound';
 
 type SR = {
   start: () => void;
@@ -103,6 +104,7 @@ export function ArchivistScreen() {
     e?.preventDefault();
     if (text.trim().length < 8) {
       setError('Write at least a few words about what you remember.');
+      sfx('error');
       taRef.current?.focus();
       return;
     }
@@ -117,6 +119,7 @@ export function ArchivistScreen() {
       const out = await askArchivist(text.trim(), ctrl.signal);
       setResult(out.result);
       setNote(out.note);
+      sfx('success');
     } catch {
       /* aborted */
     } finally {

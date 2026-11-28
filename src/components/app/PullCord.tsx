@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { sfx } from '@/lib/sound';
 import { toggleTheme, useStore } from '@/lib/store/store';
 
 const LIMIT = 46;
@@ -14,6 +15,7 @@ export function PullCord() {
   const drag = useRef<{ y0: number; moved: boolean; last: number } | null>(null);
 
   const fire = () => {
+    sfx('cord');
     try {
       navigator.vibrate?.(12);
     } catch {
@@ -34,6 +36,7 @@ export function PullCord() {
     <button
       type="button"
       className={`cord${dragging ? ' is-drag' : ''}`}
+      data-sfx="none"
       aria-label={night ? 'Light mode' : 'Dark mode'}
       aria-pressed={night}
       title={night ? 'Pull for light mode' : 'Pull for dark mode'}

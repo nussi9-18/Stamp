@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { bootApp } from '@/lib/auth/session';
+import { configureSound, installButtonSounds } from '@/lib/sound';
 import { useStore } from '@/lib/store/store';
 import { PassportControl } from '../control/PassportControl';
 import { AppShell } from './AppShell';
@@ -21,10 +22,18 @@ export function AppRoot({ children }: { children: React.ReactNode }) {
   const authState = useStore((s) => s.auth);
   const control = useStore((s) => s.control);
 
+  const soundOn = useStore((s) => s.data?.prefs.sfx !== 'off');
+  const look = useStore((s) => s.look);
+
   useEffect(() => {
     void bootApp();
     registerServiceWorker();
+    return installButtonSounds();
   }, []);
+
+  useEffect(() => {
+    configureSound({ on: soundOn, look });
+  }, [soundOn, look]);
 
   if (boot === 'loading') return <div className="boot" aria-busy="true" />;
   if (authState === 'signed-out' || control) return <PassportControl intent={control} />;

@@ -34,6 +34,17 @@ export function Sheet({
     setTimeout(onClose, reduce ? 0 : 220);
   }, [closing, onClose]);
 
+  // Escape closes the sheet even when focus has moved outside it (e.g. after the stamp moment).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if (ref.current?.contains(document.activeElement)) return; // handled by onKeyDown below
+      close();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [close]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;

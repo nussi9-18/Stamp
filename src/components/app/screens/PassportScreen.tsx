@@ -15,6 +15,7 @@ import { ItemStamp } from '../../brand/Stamp';
 import { DispatchSoon } from '../DispatchSoon';
 import { NowCard } from '../Now';
 import { PageTitle } from '../PageTitle';
+import { sfx } from '@/lib/sound';
 
 const PER_PAGE = 12;
 
@@ -198,6 +199,7 @@ function VisaPanel({ stamps }: { stamps: ReturnType<typeof liveStamps> }) {
 
   const goTo = (to: number) => {
     if (to < 0 || to >= pages || to === cur) return;
+    sfx('page');
     setTurn({ dir: to > cur ? 'next' : 'prev', key: Date.now() });
     setPage(to);
   };

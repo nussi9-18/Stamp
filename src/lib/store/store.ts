@@ -37,7 +37,8 @@ export type UserData = {
   follows: Record<string, Flag>;
   likes: Record<string, Flag>;
   custom: Record<string, CustomRec>;
-  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean; look?: Look };
+  /** sound: legacy stamp-thunk switch; sfx: all interface sounds ('on' unless turned off) */
+  prefs: { sound: boolean; manualSeen: boolean; bannerDismissed: boolean; dispatchInterest?: boolean; look?: Look; sfx?: 'on' | 'off' };
   /** what this passport is watching / reading / playing / listening to right now */
   now?: NowStatus | null;
   sync: { lastPullAt: string | null; dirtyAt: number; pushedAt: number };
