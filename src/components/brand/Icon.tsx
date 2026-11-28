@@ -32,7 +32,11 @@ export type IconName =
   | 'eye'
   | 'ticket'
   | 'book'
-  | 'grid';
+  | 'grid'
+  | 'clapper'
+  | 'play'
+  | 'flag'
+  | 'external';
 
 const P: Record<IconName, React.ReactNode> = {
   passport: (
@@ -127,6 +131,16 @@ const P: Record<IconName, React.ReactNode> = {
   ticket: <path d="M3.5 7.5h17v3a1.5 1.5 0 0 0 0 3v3h-17v-3a1.5 1.5 0 0 0 0-3zM14.5 7.5v9" />,
   book: <path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5v13c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5zM12 6v13.5" />,
   grid: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />,
+  clapper: (
+    <>
+      <path d="M3.5 11h17v9h-17z" />
+      <path d="M3.5 11l-.8-3.4 16.1-4.1.9 3.4z" />
+      <path d="M7.4 6.4l2.6 3M12.3 5.1l2.6 3.1" />
+    </>
+  ),
+  play: <path d="M8 5v14l11-7z" fill="currentColor" />,
+  flag: <path d="M5.5 21V4M5.5 4.5h12.5l-2.6 4.2 2.6 4.3H5.5" />,
+  external: <path d="M10.5 5H5v14h14v-5.5M13.5 4.5h6v6M19.5 4.5l-8.5 8.5" />,
 };
 
 export function Icon({ name, size = 20, className, title }: { name: IconName; size?: number; className?: string; title?: string }) {

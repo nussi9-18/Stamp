@@ -4,6 +4,7 @@ import './shell.css';
 import './screens.css';
 import '../themes/modern.css';
 import '../themes/retro.css';
+import './shorts.css';
 
 export const metadata: Metadata = {
   title: { default: 'Your passport', template: '%s · STAMP' },

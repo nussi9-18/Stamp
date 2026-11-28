@@ -2,8 +2,8 @@
    Pages: network first, falling back to the cached copy (and then to /app).
    Hashed build assets: cache first. The AI routes and Supabase are never cached. */
 
-const VERSION = 'stamp-v1';
-const PAGES = ['/app', '/app/discover', '/app/feed', '/app/people', '/app/wrapped', '/app/archivist', '/app/diplomat', '/app/shield', '/'];
+const VERSION = 'stamp-v2';
+const PAGES = ['/app', '/app/discover', '/app/shorts', '/app/feed', '/app/people', '/app/wrapped', '/app/archivist', '/app/diplomat', '/app/shield', '/'];
 const STATIC = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png', '/icons/favicon.svg'];
 
 async function precache() {

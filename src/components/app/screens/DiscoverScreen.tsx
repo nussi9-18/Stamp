@@ -181,6 +181,11 @@ export function DiscoverScreen() {
           <h2>Watching with someone?</h2>
           <p>The Diplomat finds one pick you’ll both like.</p>
         </Link>
+        <Link href="/app/shorts" className="tool-card tool-wide">
+          <span className="ai-label">New</span>
+          <h2>Indie shorts</h2>
+          <p>Short films by new filmmakers, free to watch.</p>
+        </Link>
       </div>
 
       <div className="split">

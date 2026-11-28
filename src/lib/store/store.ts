@@ -8,6 +8,7 @@ import { DEFAULT_SHIELD, detectPreset, PRESETS } from '../shield';
 import type { Dispatch, Item, LiveSession, Look, Mood, Passport, Person, Place, Rating, Shield, ShieldAction, ShieldPreset, Stamp, Theme } from '../types';
 import { idbGet, idbSet, lsGet, lsSet } from './idb';
 import { liveNow, makeNow, nowVerb, type NowStatus } from '../now';
+import type { Short } from '../shorts';
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
 
@@ -53,7 +54,9 @@ export type SheetSpec =
   | { type: 'person'; id: string }
   | { type: 'add-own'; title?: string; kind?: Item['kind']; by?: string; year?: number }
   | { type: 'passport-code' }
-  | { type: 'look'; next?: 'manual' };
+  | { type: 'look'; next?: 'manual' }
+  | { type: 'short'; id: string }
+  | { type: 'submit-short' };
 
 export type ControlIntent = { kind: 'exit' } | { kind: 'save' } | { kind: 'oauth-return' };
 
@@ -79,7 +82,19 @@ export type AppState = {
   look: Look;
   /** set while a passport is being issued / admitted so the shell can play the field manual after */
   justIssued: boolean;
+  /** the indie shorts room: approved films, your own submissions, applause from others */
+  shorts: ShortsState;
 };
+
+export type ShortsState = {
+  status: 'idle' | 'loading' | 'ok' | 'offline' | 'local' | 'error';
+  live: Short[];
+  mine: Short[];
+  /** short id → how many other people applauded it */
+  applause: Record<string, number>;
+};
+
+export const EMPTY_SHORTS: ShortsState = { status: 'idle', live: [], mine: [], applause: {} };
 
 const initial: AppState = {
   boot: 'loading',
@@ -98,6 +113,7 @@ const initial: AppState = {
   control: null,
   look: 'retro',
   justIssued: false,
+  shorts: EMPTY_SHORTS,
 };
 
 /* ── Store core ────────────────────────────────────────────────────────── */

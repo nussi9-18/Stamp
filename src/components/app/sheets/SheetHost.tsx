@@ -2,14 +2,17 @@
 
 import { closeSheet, getItem, useStore } from '@/lib/store/store';
 import { PEOPLE_BY_ID } from '@/lib/catalog';
+import { SAMPLE_SHORTS } from '@/lib/shorts';
 import { Sheet } from '../../ui/Sheet';
 import { RecordView } from '../RecordView';
 import { LookSheet, leaveLookSheet } from '../LookPicker';
 import { AddOwnSheet, CanonPickerSheet, CanonSlotSheet, ManualSheet, PassportCodeSheet, PersonSheet, SettingsSheet } from './Sheets';
+import { ShortSheet, SubmitShortSheet } from './ShortSheets';
 
 export function SheetHost() {
   const top = useStore((s) => s.sheets[s.sheets.length - 1]);
   const remotePeople = useStore((s) => s.remote.people);
+  const shorts = useStore((s) => s.shorts);
   if (!top) return null;
   const { spec, key } = top;
   switch (spec.type) {
@@ -63,6 +66,20 @@ export function SheetHost() {
       return (
         <Sheet key={key} title="Your look" onClose={() => leaveLookSheet(spec.next)}>
           <LookSheet next={spec.next} />
+        </Sheet>
+      );
+    case 'short': {
+      const s = shorts.mine.find((x) => x.id === spec.id) ?? shorts.live.find((x) => x.id === spec.id) ?? SAMPLE_SHORTS.find((x) => x.id === spec.id);
+      return (
+        <Sheet key={key} title={s ? s.title : 'Short film'} onClose={closeSheet}>
+          {s ? <ShortSheet short={s} /> : <p>This film isn’t available right now.</p>}
+        </Sheet>
+      );
+    }
+    case 'submit-short':
+      return (
+        <Sheet key={key} title="Send your film" onClose={closeSheet}>
+          <SubmitShortSheet />
         </Sheet>
       );
     case 'passport-code':

@@ -15,10 +15,13 @@ import { SheetHost } from './sheets/SheetHost';
 const MAIN: { href: string; label: string; icon: IconName }[] = [
   { href: '/app', label: 'Passport', icon: 'passport' },
   { href: '/app/discover', label: 'Discover', icon: 'discover' },
+  { href: '/app/shorts', label: 'Shorts', icon: 'clapper' },
   { href: '/app/feed', label: 'Feed', icon: 'feed' },
   { href: '/app/people', label: 'People', icon: 'people' },
   { href: '/app/wrapped', label: 'Wrapped', icon: 'wrapped' },
 ];
+/** Phone tab bar: two tabs, the stamp button, two tabs. */
+const TABS = MAIN.filter((l) => ['/app', '/app/discover', '/app/feed', '/app/people'].includes(l.href));
 const TOOLS: { href: string; label: string; icon: IconName }[] = [
   { href: '/app/archivist', label: 'Archivist', icon: 'archivist' },
   { href: '/app/diplomat', label: 'Diplomat', icon: 'diplomat' },
@@ -170,7 +173,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Phone tab bar */}
       <nav className="tabbar" aria-label="Tabs">
-        {MAIN.slice(0, 2).map((l) => (
+        {TABS.slice(0, 2).map((l) => (
           <Link key={l.href} href={l.href} className="tab" aria-current={isActive(pathname, l.href) ? 'page' : undefined}>
             <Icon name={l.icon} />
             <span className="tab-label">{l.label}</span>
@@ -184,7 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             Stamp
           </span>
         </button>
-        {MAIN.slice(2, 4).map((l) => (
+        {TABS.slice(2, 4).map((l) => (
           <Link key={l.href} href={l.href} className="tab" aria-current={isActive(pathname, l.href) ? 'page' : undefined}>
             <Icon name={l.icon} />
             <span className="tab-label">{l.label}</span>
