@@ -173,7 +173,7 @@ export async function migrateLocal(u: AuthUser): Promise<Resolution> {
 /* ── Leaving ───────────────────────────────────────────────────────────── */
 
 function withViewTransition(cls: string, update: () => void): Promise<void> {
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void>; ready: Promise<void> } };
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!doc.startViewTransition || reduce) {
     update();
@@ -181,7 +181,9 @@ function withViewTransition(cls: string, update: () => void): Promise<void> {
   }
   document.documentElement.classList.add(cls);
   const vt = doc.startViewTransition(() => flushSync(update));
-  return vt.finished.finally(() => document.documentElement.classList.remove(cls));
+  // A transition the browser skips (the keyboard opening, a rotation) is fine: the update still ran.
+  vt.ready.catch(() => undefined);
+  return vt.finished.catch(() => undefined).finally(() => document.documentElement.classList.remove(cls));
 }
 
 /** Settings → Sign out: the app shell fades to the open passport, EXIT, the cover closes. */

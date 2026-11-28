@@ -34,6 +34,8 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 
 ## Supabase setup
 
+> The live project (www.stamppassport.app) is already set up; `SETUP.md` lists the owner's remaining steps (custom SMTP for sign-in emails, API keys in Vercel).
+
 1. Create a project, then apply the schema and the catalog seed:
    ```bash
    supabase link --project-ref <ref>
@@ -117,10 +119,10 @@ Discover searches the 50-work catalog first, then the world archives through `/a
 
 | Kind | Source | Key |
 | --- | --- | --- |
-| Films, series | TMDB (and anime from AniList) | `TMDB_API_KEY` |
+| Films, series | TMDB (and anime from AniList); without a key, Wikidata (films) and TVmaze (series) | `TMDB_API_KEY` (optional) |
 | Books | Open Library | none |
 | Manga | AniList | none |
-| Games | RAWG | `RAWG_API_KEY` |
+| Games | RAWG; without a key, Wikidata | `RAWG_API_KEY` (optional) |
 | Albums | MusicBrainz | none |
 
 - A source without a key is simply skipped; a failing source never breaks the others.
