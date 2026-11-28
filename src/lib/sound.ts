@@ -32,6 +32,8 @@ let noiseBuf: AudioBuffer | null = null;
 let enabled = true;
 let look: Look = 'retro';
 let lastAt: Record<string, number> = {};
+/** A sound asked for while audio was still locked (the first tap on a phone); played once it opens. */
+let pending: { name: Sfx; at: number } | null = null;
 
 /** Called whenever the passport's sound setting or look changes. */
 export function configureSound(opts: { on: boolean; look: Look }) {
@@ -43,7 +45,11 @@ export function soundEnabled() {
   return enabled;
 }
 
-/** Create / resume the audio context. Must run inside a user gesture the first time (iOS, Chrome). */
+/**
+ * Create / resume the audio context. Browsers only allow this while a real gesture is being
+ * handled: a click, a key, a mouse press, or the END of a touch (pointerup / touchend). On a
+ * phone, the start of a touch (pointerdown) doesn't count, so audio stays locked until then.
+ */
 export function unlockAudio() {
   if (typeof window === 'undefined') return;
   try {
@@ -58,21 +64,46 @@ export function unlockAudio() {
       master.gain.value = 0.55;
       master.connect(comp).connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') void ctx.resume();
+    // 'suspended' at first, or 'interrupted' on iOS after a call or switching apps.
+    if (ctx.state !== 'running' && ctx.state !== 'closed') {
+      ctx.resume().then(flushPending, () => {
+        /* not inside a gesture yet: the next tap's end will open it */
+      });
+      // Older iOS opens its audio route only once something starts inside the gesture.
+      const blip = ctx.createBufferSource();
+      blip.buffer = ctx.createBuffer(1, 1, 22050);
+      blip.connect(ctx.destination);
+      blip.start(0);
+    }
   } catch {
     ctx = null;
   }
+}
+
+function flushPending() {
+  const p = pending;
+  pending = null;
+  if (p && performance.now() - p.at < 900) playNow(p.name);
 }
 
 /** Play a named sound in the current look (no-op when sounds are off or the page is hidden). */
 export function sfx(name: Sfx, opts: { force?: boolean } = {}) {
   if ((!enabled && !opts.force) || typeof document === 'undefined' || document.hidden) return;
   unlockAudio();
-  if (!ctx || !master || ctx.state !== 'running') return;
+  if (!ctx || !master) return;
+  if (ctx.state !== 'running') {
+    pending = { name, at: performance.now() };
+    return;
+  }
   // The same sound twice within 35ms is one event reaching us twice (pointer + keyboard).
   const now = performance.now();
   if (now - (lastAt[name] ?? 0) < 35) return;
   lastAt[name] = now;
+  playNow(name);
+}
+
+function playNow(name: Sfx) {
+  if (!ctx || !master) return;
   const play = (look === 'retro' ? RETRO : MODERN)[name];
   if (!play) return;
   try {
@@ -317,7 +348,6 @@ const PRESSABLE = '[data-sfx], button, a[href], [role="button"], label.radio-car
 /** Install one listener that gives every button a press sound. Returns a cleanup function. */
 export function installButtonSounds(): () => void {
   const onDown = (e: PointerEvent) => {
-    unlockAudio();
     if (e.button !== 0) return;
     const el = (e.target as Element | null)?.closest(PRESSABLE);
     if (!el || (el as HTMLButtonElement).disabled || el.getAttribute('aria-disabled') === 'true') return;
@@ -332,10 +362,21 @@ export function installButtonSounds(): () => void {
     const s = soundFor(el);
     if (s) sfx(s);
   };
+  // Phones allow audio to start only at the end of a touch, so unlock there too (and on clicks).
+  const onUp = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse') unlockAudio();
+  };
+  const onGesture = () => unlockAudio();
   document.addEventListener('pointerdown', onDown, { capture: true, passive: true });
+  document.addEventListener('pointerup', onUp, { capture: true, passive: true });
+  document.addEventListener('touchend', onGesture, { capture: true, passive: true });
+  document.addEventListener('click', onGesture, { capture: true });
   document.addEventListener('keydown', onKey, { capture: true });
   return () => {
     document.removeEventListener('pointerdown', onDown, { capture: true });
+    document.removeEventListener('pointerup', onUp, { capture: true });
+    document.removeEventListener('touchend', onGesture, { capture: true });
+    document.removeEventListener('click', onGesture, { capture: true });
     document.removeEventListener('keydown', onKey, { capture: true });
   };
 }

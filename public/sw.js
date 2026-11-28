@@ -1,8 +1,9 @@
 /* STAMP service worker — offline app shell.
    Pages: network first, falling back to the cached copy (and then to /app).
+   In-app navigations (RSC payloads) and other data: network first too, so a new deploy shows at once.
    Hashed build assets: cache first. The AI routes and Supabase are never cached. */
 
-const VERSION = 'stamp-v2';
+const VERSION = 'stamp-v3';
 const PAGES = ['/app', '/app/discover', '/app/shorts', '/app/feed', '/app/people', '/app/wrapped', '/app/archivist', '/app/diplomat', '/app/shield', '/'];
 const STATIC = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png', '/icons/favicon.svg'];
 
@@ -68,13 +69,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // RSC payloads and everything else on this origin: stale-while-revalidate.
+  // RSC payloads and everything else on this origin: network first, the cached copy offline.
   event.respondWith(
-    caches.match(req).then((hit) => {
-      const net = fetch(req)
-        .then((res) => put(req, res))
-        .catch(() => hit || Response.error());
-      return hit || net;
-    }),
+    fetch(req)
+      .then((res) => put(req, res))
+      .catch(async () => (await caches.match(req)) || Response.error()),
   );
 });
