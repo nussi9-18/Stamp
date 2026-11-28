@@ -40,7 +40,7 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
    supabase db push                      # every file in supabase/migrations/, in order
    psql "$DATABASE_URL" -f supabase/seed.sql
    ```
-   You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), `20261125000100_api_grants.sql` (Data API access, needed when "Grant API access to new tables automatically" was left off), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
+   You can also paste the files into the SQL editor in this order: `20261124000000_init.sql`, `20261125000000_presence.sql` (the "Now" status), `20261125000100_api_grants.sql` (Data API access, needed when "Grant API access to new tables automatically" was left off), `20261128000000_shorts.sql` (Indie shorts), then `seed.sql`. Without the presence table everything else still syncs; "Now" just stays on the device.
 2. **Authentication → Providers**: enable **Email** with "Confirm email", and set the OTP length to 6. To enable **Apple** and **Google**, add each provider's client ID and secret.
 3. **Authentication → Emails → Magic link or OTP**: include **both** the code and the link, so one email serves the 6-digit code and the "Email me a link instead" path. Supabase only lets you edit templates once custom SMTP is set up (**Emails → SMTP Settings**, e.g. Resend); the built-in sender also only delivers to your organization's members, so real users need custom SMTP anyway. Until then the default email carries the link only, and signing in by link works.
    ```html
@@ -57,11 +57,12 @@ Copy `.env.example` to `.env.local` to turn on real accounts, sync and AI.
 
 ### What the schema does
 
-- **Tables:** `profiles`, `items` (the seeded catalog), `custom_items`, `stamps`, `canon`, `wishlist`, `follows`, `likes`, `dispatches`, `presence` (the "Now" status: one row per person, which expires on its own).
+- **Tables:** `profiles`, `items` (the seeded catalog), `custom_items`, `stamps`, `canon`, `wishlist`, `follows`, `likes`, `dispatches`, `presence` (the "Now" status: one row per person, which expires on its own), `shorts` and `short_reports` (Indie shorts).
 - **Row Level Security:** each user reads and writes only their own rows. The exceptions are `dispatches` and `presence`, which the people who follow you can read.
 - **Public passport fields:** a follower reads them through `passport_cards(ids)`. Search by passport code goes through `find_passport(code)`.
 - **Conflict handling:** a trigger keeps the newer write, comparing `updated_at` (last write wins). It also stamps `synced_at` with the server clock. Clients pull by `synced_at`, so a device with a slow clock is never skipped.
-- **Tested:** the schema and RLS were checked against PostgreSQL 16, covering cross-user isolation, follower-only dispatches, last-write-wins and unique passport numbers.
+- **Indie shorts:** approved (`live`) shorts are public, even signed out; a pending or rejected film is visible only to the person who sent it. Senders can't set the status, edit, or have more than 5 films waiting. Reports are write-only. `short_applause(ids)` counts other people's applause (from `likes`, `short:<id>`).
+- **Tested:** the schema and RLS were checked against PostgreSQL 16, covering cross-user isolation, follower-only dispatches, last-write-wins, unique passport numbers, and the shorts rules above.
 
 ### Sync
 
@@ -87,6 +88,28 @@ The app has two looks, each in light and dark (4 in all). People pick one after 
 - Tokens live in `src/app/themes/modern.css` and `src/app/themes/retro.css` (`:root[data-look=…][data-theme=…]`); base component CSS stays in `globals.css`, `app/shell.css`, `app/screens.css`.
 - `<html data-look data-theme>` is set before first paint (`src/app/app/layout.tsx`); a first visit follows the system's light or dark setting.
 - Interactions: `SlideAction`, `PullCord`, swipe to turn visa pages; all have tap and keyboard alternatives and respect reduced motion.
+
+## Sounds
+
+Every button makes a sound, built in the browser with the Web Audio API (no audio files, `src/lib/sound.ts`).
+
+- **Retro:** physical clacks: keys, VCR piano keys, a ticket punch, the lamp cord, a tape going in when you change pages at night, a Dymo label for toasts and a heavy rubber stamp.
+- **Modern:** short, soft ticks and a clean stamp with a chime.
+- One delegated listener gives every button its sound; an element can pick another with `data-sfx="…"`, or none with `data-sfx="none"`.
+- Levels are set per sound (`LEVEL`), measured from offline renders. Settings → **Sounds** turns them all off (`prefs.sfx`, synced).
+
+## Indie shorts
+
+`/app/shorts` is a room for short films (up to 40 minutes) by new, independent filmmakers, free to watch. A card in Discover and the iPad rail lead there.
+
+- **Watching:** a short of the day, filters by length and genre, a player using `youtube-nocookie.com` or Vimeo with Do Not Track, which loads only after Play is pressed. A short can be applauded, saved, stamped into the passport like any film, or reported.
+- **Sending:** anyone with an account sends a YouTube or Vimeo link, title, length, genre, one line and optional content notes (which feed the comfort shield). The link is stored in one canonical form, so the same film can't be sent twice. Sent films appear under **Your films** with their status.
+- **Until the first film is approved**, the room shows 6 clearly labelled sample films.
+- **Approving:** in Supabase → Table Editor → `shorts`, set `status` to `live` (or `rejected`). Or in SQL:
+  ```sql
+  update shorts set status = 'live', reviewed_at = now() where id = '<id>';
+  select s.title, r.reason, count(*) from short_reports r join shorts s on s.id = r.short_id group by 1, 2 order by 3 desc;
+  ```
 
 ## World archives
 
@@ -134,12 +157,13 @@ Both routes call Claude from the server with the official SDK (`@anthropic-ai/sd
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run gen:seed` | Regenerates `supabase/seed.sql` from `src/lib/catalog.ts` (Appendix A) |
 | `npm run gen:icons` | Renders the PWA icons from the seal (needs Playwright) |
+| `npm run gen:logos` | Builds the logo pack in `public/brand/logos/` (needs Playwright; Pillow makes the PNGs smaller). `-- --zip <file>` also writes a zip |
 | `npm run gen:screens` | Re-shoots the real app screenshots used on the website (needs Playwright, Pillow and a running app) |
 
 ## Project layout
 
 ```
-src/app/(marketing)/      website: sections 1–11 (§7)
+src/app/(marketing)/      website: sections 1–11 (§7) and /brand (the logo pack)
 src/app/app/              app routes: passport, discover, feed, people, wrapped, archivist, diplomat, shield
 src/app/api/              archivist + diplomat route handlers (server-only key)
 src/components/brand/     Seal, Stamp (4 shapes, worn-ink filter), Poster, MRZ, MatchRing, icons
@@ -147,7 +171,7 @@ src/components/control/   PassportControl: the login / sign-up animation (§9), 
 src/components/app/       shell (tab bar / rail), screens, sheets, record view, stamp moment
 src/lib/                  catalog + seed data, heat, shield, match, MRZ, wrapped, Letterboxd, AI, store, sync, auth
 supabase/                 migration (tables, RLS, functions) + generated seed
-public/                   manifest, service worker (offline shell), icons, website screenshots
+public/                   manifest, service worker (offline shell), icons, website screenshots, brand/logos (SVG + PNG)
 ```
 
 ## PWA
@@ -155,6 +179,14 @@ public/                   manifest, service worker (offline shell), icons, websi
 - **Install:** add `/app` to the Home Screen from Safari's share sheet. It runs full-screen, with `apple-mobile-web-app-capable` and `viewport-fit=cover`, and respects safe areas.
 - **Offline:** the service worker (`public/sw.js`, production builds only) pre-caches every app route and its assets. The passport and the visa pages then work offline.
 - **App Store:** to ship there later, wrap the app with Capacitor. That also unlocks native haptics and Core NFC for the passport exchange.
+
+## Brand kit
+
+27 logos in `public/brand/logos/`: seals (colour, one colour, white, rubber, Retro, night), wordmarks and lockups, app icons (Modern, Retro, VHS), postage stamp, ticket, passport cover, monogram, star, italic, neon, screen print, VCR screen, marker on tape, rubber stamp, Modern wordmark and badge, passport line and film reel.
+
+- Each one is an SVG with its text turned into outlines (it looks the same without the fonts) and a transparent 1024px PNG. `contact-sheet.jpg` shows them all.
+- The website lists them at `/brand` (linked from the footer) with downloads.
+- Fonts: Anton, Playfair Display, JetBrains Mono, Inter, VT323 and Permanent Marker, all under the SIL Open Font License.
 
 ## Decisions worth knowing
 

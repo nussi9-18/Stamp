@@ -1,0 +1,164 @@
+[
+  {
+    "id": "01-seal",
+    "name": "Seal",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "02-seal-ink",
+    "name": "Seal · one colour",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "03-seal-white",
+    "name": "Seal · white",
+    "tile": "dark",
+    "wide": false
+  },
+  {
+    "id": "04-seal-rubber",
+    "name": "Seal · rubber stamp",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "05-seal-retro",
+    "name": "Seal · Retro",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "06-seal-night",
+    "name": "Seal · night",
+    "tile": "dark",
+    "wide": false
+  },
+  {
+    "id": "07-wordmark",
+    "name": "Wordmark",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "08-lockup",
+    "name": "Lockup · horizontal",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "09-lockup-stacked",
+    "name": "Lockup · stacked",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "10-icon-modern",
+    "name": "App icon · Modern",
+    "tile": "dark",
+    "wide": false
+  },
+  {
+    "id": "11-icon-retro",
+    "name": "App icon · Retro",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "12-icon-vhs",
+    "name": "App icon · VHS tape",
+    "tile": "dark",
+    "wide": false
+  },
+  {
+    "id": "13-postage",
+    "name": "Postage stamp",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "14-ticket",
+    "name": "Ticket",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "15-passport",
+    "name": "Passport cover",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "16-monogram",
+    "name": "Monogram S",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "17-star",
+    "name": "Star mark",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "18-italic",
+    "name": "Italic wordmark",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "19-neon",
+    "name": "Neon sign",
+    "tile": "dark",
+    "wide": true
+  },
+  {
+    "id": "20-screenprint",
+    "name": "Screen print",
+    "tile": "light",
+    "wide": false
+  },
+  {
+    "id": "21-vcr",
+    "name": "VCR screen",
+    "tile": "dark",
+    "wide": true
+  },
+  {
+    "id": "22-marker",
+    "name": "Marker on tape",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "23-rubber-stamp",
+    "name": "Rubber stamp",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "24-modern-wordmark",
+    "name": "Modern wordmark",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "25-modern-badge",
+    "name": "Modern badge",
+    "tile": "dark",
+    "wide": false
+  },
+  {
+    "id": "26-mrz",
+    "name": "Passport line",
+    "tile": "light",
+    "wide": true
+  },
+  {
+    "id": "27-reel",
+    "name": "Film reel",
+    "tile": "light",
+    "wide": false
+  }
+]

@@ -19,19 +19,19 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <nav aria-label="Sections">
             <ul className="nav-links">
               <li>
-                <a href="#how">How it works</a>
+                <a href="/#how">How it works</a>
               </li>
               <li>
-                <a href="#shield">Shield</a>
+                <a href="/#shield">Shield</a>
               </li>
               <li>
-                <a href="#ai">AI tools</a>
+                <a href="/#ai">AI tools</a>
               </li>
               <li>
-                <a href="#people">People</a>
+                <a href="/#people">People</a>
               </li>
               <li>
-                <a href="#dispatch">Dispatch</a>
+                <a href="/#dispatch">Dispatch</a>
               </li>
             </ul>
           </nav>
@@ -44,6 +44,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <footer className="footer">
         <div className="wrap footer-in">
           <span className="label">STAMP — Media passport</span>
+          <Link href="/brand" className="label">
+            Brand kit
+          </Link>
           <span className="label">Designed by Nussi</span>
         </div>
       </footer>

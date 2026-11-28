@@ -29,10 +29,17 @@ Read this first in a new session. The spec is the original build prompt (STAMP_P
 - "Now" status (like Discord): set from any record ("I'm watching this"), optional progress, fades after 1–24 h by kind, ends on stamp; shown on Passport, Feed "Right now", People. Followers-only via `presence` table.
 - Mystery dispatch = **Coming soon** (owner can't ship physical goods): card on Passport + Settings with only a "Notify me" button (`prefs.dispatchInterest`); website shows tiers without prices. Count: `select count(*) from profiles where prefs->>'dispatchInterest'='true';`
 
+**Sounds** (`src/lib/sound.ts`): Web Audio, no files. Retro = physical clacks, tape, Dymo, rubber stamp; Modern = soft ticks. Every button has one (delegated listener, `data-sfx` overrides). Settings → Sounds on/off (`prefs.sfx`).
+
+**Indie shorts** (`/app/shorts`): short films (≤ 40 min) by new filmmakers. Short of the day, length/genre filters, YouTube-nocookie/Vimeo player, applaud / save / stamp / report. Account holders send a YouTube/Vimeo link → `pending` → owner approves in Supabase (Table Editor → `shorts` → `status = live`). 6 labelled samples show until the first approval. Files: `src/lib/shorts.ts`, `src/lib/sync/shorts.ts`, `src/components/app/screens/ShortsScreen.tsx`, `src/components/app/sheets/ShortSheets.tsx`, `src/app/app/shorts.css`.
+
+**Logo pack**: 27 logos (SVG outlines + transparent PNG) in `public/brand/logos/`, shown at `/brand` (footer link). Rebuild: `npm run gen:logos`.
+
 **Database** (`supabase/migrations/`, validated on Postgres 16)
 - `20261124000000_init.sql` tables + RLS + `passport_cards`, `find_passport`
 - `20261125000000_presence.sql` "Now" status
 - `20261125000100_api_grants.sql` Data API grants
+- `20261128000000_shorts.sql` Indie shorts (`shorts`, `short_reports`, `short_applause`), RLS tested
 - `supabase/seed.sql` catalog (Appendix A)
 
 **Website (`/`)**: all 11 sections of §7, real app screenshots, static.
@@ -42,9 +49,10 @@ Read this first in a new session. The spec is the original build prompt (STAMP_P
 ## To do
 
 **Owner (keys go in Vercel → Settings → Environment Variables, then Redeploy; never in the code/chat)**
-1. Confirm Supabase is set up: all 3 migrations + `seed.sql` run; Site URL + redirect `https://stamp-gilt.vercel.app/app`; email template with `{{ .Token }}` and `{{ .ConfirmationURL }}` (needs custom SMTP); optional Google/Apple providers.
+1. Confirm Supabase is set up: all 4 migrations (incl. `20261128000000_shorts.sql`) + `seed.sql` run; Site URL + redirect `https://stamp-gilt.vercel.app/app`; email template with `{{ .Token }}` and `{{ .ConfirmationURL }}` (needs custom SMTP); optional Google/Apple providers.
 2. `TMDB_API_KEY` (films/series), `RAWG_API_KEY` (games; owner has one — put it in Vercel), `ANTHROPIC_API_KEY` (AI tools).
 3. Decide: real TMDB posters vs typographic posters (spec says typographic for copyright); custom domain.
+4. Approve sent shorts in Supabase (`shorts.status` → `live` or `rejected`); check `short_reports` now and then.
 
 **Next prompts** — see NEXT_PROMPTS.md (Prompt 1 is done; start with Prompt 2: real posters + Retro zine style).
 

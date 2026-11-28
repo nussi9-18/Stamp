@@ -68,7 +68,7 @@ The owner feels the app is "lifeless". Make it feel alive without clutter:
 - Small, meaningful motion: stamps landing, pages turning, gentle haptics.
 - Personal touches: greetings by time of day, "on this day" memories from past stamps, a streak or "passport milestones" (10, 50, 100 stamps, first country, …).
 - Empty states with character.
-- Sound for stamping (already exists, off by default): make it nicer.
+- ~~Sound for stamping: make it nicer.~~ ✅ Done (Nov 28): every button has a sound in both looks, with an on/off switch in Settings.
 - Work in both themes; respect reduced motion.
 
 Propose 5–8 ideas first, let the owner pick, then build.
@@ -106,3 +106,14 @@ Read HANDOFF.md first.
 - Custom domain (owner chooses).
 - Google Play open testing and TestFlight.
 - Keep Mystery dispatch and STAMP+ as **Coming soon**. No ads, ever.
+
+---
+
+## Prompt 8 — Indie shorts: grow the room
+
+Read HANDOFF.md first. The shorts room is live (Nov 28); approval happens in the Supabase dashboard today.
+
+- A small **review screen** for the owner's account only: pending films with a player, Approve / Reject, and the reports list. Lock it down with RLS (an `admins` table), not by hiding a button.
+- Tell filmmakers when their film goes live (an in-app notice, and email once custom SMTP is set up).
+- **Filmmaker pages**: every film by one person, their link, total applause.
+- A monthly "festival" shelf picked by the owner.
