@@ -80,7 +80,7 @@ Propose 5–8 ideas first, let the owner pick, then build.
 Read HANDOFF.md first.
 
 The manual "Now" status is done. Add automatic sources:
-- **Spotify:** OAuth, currently playing. Needs `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET`, redirect `https://stamp-gilt.vercel.app/api/spotify/callback`.
+- **Spotify:** OAuth, currently playing. Needs `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET`, redirect `https://www.stamppassport.app/api/spotify/callback`.
 - **Steam:** Web API, `STEAM_API_KEY`, public profiles.
 - **Xbox:** via OpenXBL.
 - **PlayStation:** experimental, labelled as such. Uses the unofficial NPSSO token; may break, and is against Sony's terms.

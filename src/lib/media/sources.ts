@@ -1,10 +1,12 @@
-// Server-only: searches the world archives (TMDB, Open Library, AniList, RAWG, MusicBrainz)
-// and maps every result to a STAMP Item. External works carry no heat data.
+// Server-only: searches the world archives and maps every result to a STAMP Item.
+// Films & series: TMDB when TMDB_API_KEY is set; otherwise Wikidata (films) and TVmaze (series).
+// Games: RAWG when RAWG_API_KEY is set; otherwise Wikidata. Books: Open Library. Manga & anime:
+// AniList. Albums: MusicBrainz. External works carry no heat data.
 
 import type { Item, Kind } from '../types';
 
 export type ExternalItem = Item & { source: Source };
-export type Source = 'tmdb' | 'openlibrary' | 'anilist' | 'rawg' | 'musicbrainz';
+export type Source = 'tmdb' | 'tvmaze' | 'wikidata' | 'openlibrary' | 'anilist' | 'rawg' | 'musicbrainz';
 
 const TIMEOUT = 4500;
 const UA = 'STAMP/1.0 (media passport; https://github.com/nussi9-18/Stamp)';
@@ -26,9 +28,21 @@ const yearOf = (s?: string | null) => {
   return Number.isFinite(y) && y > 1000 ? y : undefined;
 };
 
+const ENTITIES: Record<string, string> = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', hellip: '…', mdash: '—', ndash: '–' };
+
+function decodeEntities(s: string): string {
+  return s.replace(/&(#\d+|#x[0-9a-f]+|[a-z]+);/gi, (m, e: string) => {
+    if (e[0] === '#') {
+      const code = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : m;
+    }
+    return ENTITIES[e.toLowerCase()] ?? m;
+  });
+}
+
 /** First sentence, plain text, ≤ 180 chars. */
 export function logline(s?: string | null): string {
-  const text = (s ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = decodeEntities((s ?? '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
   if (!text) return '';
   const first = text.match(/^.+?[.!?](\s|$)/)?.[0]?.trim() ?? text;
   return first.length > 180 ? first.slice(0, 177).trimEnd() + '…' : first;
@@ -74,6 +88,93 @@ async function tmdb(q: string): Promise<ExternalItem[]> {
   const url = `https://api.themoviedb.org/3/search/multi?include_adult=false&page=1&query=${encodeURIComponent(q)}${isToken ? '' : `&api_key=${key}`}`;
   const data = await getJson<{ results: TmdbResult[] }>(url, isToken ? { headers: { authorization: `Bearer ${key}` } } : {});
   return data.results.map(mapTmdb).filter((x): x is ExternalItem => !!x).slice(0, 12);
+}
+
+/* ── TVmaze: series without a key ─────────────────────────────────────── */
+
+type TvmazeShow = {
+  id: number;
+  name: string;
+  premiered?: string | null;
+  averageRuntime?: number | null;
+  summary?: string | null;
+  network?: { name: string; country?: { code: string } | null } | null;
+  webChannel?: { name: string; country?: { code: string } | null } | null;
+};
+
+export function mapTvmaze(s: TvmazeShow): ExternalItem | null {
+  if (!s.name) return null;
+  const outlet = s.network ?? s.webChannel;
+  return {
+    id: `tvmaze-${s.id}`,
+    kind: 'series',
+    title: s.name,
+    year: yearOf(s.premiered),
+    by: outlet?.name ?? '',
+    cc: outlet?.country?.code ?? undefined,
+    v: null,
+    log: logline(s.summary),
+    source: 'tvmaze',
+  };
+}
+
+async function tvmaze(q: string): Promise<ExternalItem[]> {
+  const data = await getJson<{ show: TvmazeShow }[]>(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(q)}`);
+  return data.map((r) => mapTvmaze(r.show)).filter((x): x is ExternalItem => !!x).slice(0, 10);
+}
+
+/* ── Wikidata: films and games without a key ──────────────────────────── */
+// One light request (the search box API). Each hit's English description, kept tidy by Wikidata's
+// bots ("2021 film directed by Denis Villeneuve", "2017 action-adventure video game developed by
+// Nintendo"), gives the kind, year, director or studio and often the country.
+
+type WdHit = { id: string; label?: string; description?: string };
+
+const DEMONYMS: Record<string, string> = {
+  american: 'US', british: 'GB', english: 'GB', french: 'FR', german: 'DE', 'west german': 'DE', italian: 'IT', spanish: 'ES',
+  japanese: 'JP', 'south korean': 'KR', korean: 'KR', chinese: 'CN', 'hong kong': 'HK', taiwanese: 'TW', indian: 'IN',
+  iranian: 'IR', lebanese: 'LB', egyptian: 'EG', 'saudi arabian': 'SA', saudi: 'SA', moroccan: 'MA', tunisian: 'TN',
+  algerian: 'DZ', jordanian: 'JO', syrian: 'SY', palestinian: 'PS', iraqi: 'IQ', turkish: 'TR', israeli: 'IL', sudanese: 'SD',
+  soviet: 'SU', russian: 'RU', swedish: 'SE', danish: 'DK', norwegian: 'NO', finnish: 'FI', polish: 'PL', hungarian: 'HU',
+  czech: 'CZ', belgian: 'BE', dutch: 'NL', irish: 'IE', portuguese: 'PT', greek: 'GR', estonian: 'EE', mexican: 'MX',
+  brazilian: 'BR', argentine: 'AR', argentinian: 'AR', chilean: 'CL', colombian: 'CO', canadian: 'CA', australian: 'AU',
+  'new zealand': 'NZ', nigerian: 'NG', 'south african': 'ZA', thai: 'TH', filipino: 'PH', indonesian: 'ID', vietnamese: 'VN',
+};
+const DEMONYM_RE = new RegExp(`\\b(${Object.keys(DEMONYMS).sort((a, b) => b.length - a.length).join('|')})\\b`, 'i');
+const NOT_A_WORK = /\b(series|franchise|festival|soundtrack|score|character|director|producer|actor|actress|studio|company|award|project|trilogy|genre|filmmaker|edition|expansion|engine|console|developer|publisher|cancell?ed|upcoming|unreleased|season|episode)\b/i;
+
+export function mapWikidata(h: WdHit): ExternalItem | null {
+  const d = h.description ?? '';
+  const title = h.label?.trim();
+  if (!title || !d || NOT_A_WORK.test(d)) return null;
+  const kind: Kind | null = /\bvideo game\b/i.test(d) ? 'game' : /\b(film|movie)\b/i.test(d) ? 'film' : null;
+  if (!kind) return null;
+  const year = d.match(/\b(18[89]\d|19\d\d|20\d\d)\b/)?.[1];
+  // "directed by" wins; a plain "by" only when the film isn't "based on" someone else's book.
+  const raw =
+    kind === 'game'
+      ? (d.match(/\b(?:developed|published) by (.+)$/i) ?? d.match(/\bgame by (.+)$/i))?.[1]
+      : (d.match(/\bdirected by (.+)$/i) ?? (/\bbased on\b/i.test(d) ? null : d.match(/\b(?:film|movie) by (.+)$/i)))?.[1];
+  const by = raw?.replace(/\s*\(.*$/, '').replace(/,.*$/, '').trim();
+  const demonym = d.match(DEMONYM_RE)?.[1]?.toLowerCase();
+  return {
+    id: `wd-${h.id}`,
+    kind,
+    title,
+    year: year ? Number(year) : undefined,
+    by: by && by.length <= 80 ? by : '',
+    cc: demonym ? DEMONYMS[demonym] : undefined,
+    v: null,
+    log: '',
+    source: 'wikidata',
+  };
+}
+
+async function wikidata(q: string, kinds: Kind[]): Promise<ExternalItem[]> {
+  const data = await getJson<{ search?: WdHit[] }>(
+    `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&uselang=en&type=item&limit=50&format=json`,
+  );
+  return (data.search ?? []).map(mapWikidata).filter((x): x is ExternalItem => !!x && kinds.includes(x.kind)).slice(0, 12);
 }
 
 /* ── Open Library: books ──────────────────────────────────────────────── */
@@ -211,22 +312,48 @@ async function musicBrainz(q: string): Promise<ExternalItem[]> {
 
 /* ── Fan-out ──────────────────────────────────────────────────────────── */
 
-const BY_KIND: Record<Kind, ((q: string) => Promise<ExternalItem[]>)[]> = {
-  film: [tmdb, aniList],
-  series: [tmdb, aniList],
-  book: [openLibrary],
-  manga: [aniList],
-  game: [rawg],
-  album: [musicBrainz],
-};
+type Search = (q: string) => Promise<ExternalItem[]>;
+
+/** Which archives answer a search, depending on the kind and on which keys are set. */
+function sourcesFor(kind?: Kind): Search[] {
+  const hasTmdb = !!process.env.TMDB_API_KEY;
+  const hasRawg = !!process.env.RAWG_API_KEY;
+  const wd = (kinds: Kind[]): Search => (q) => wikidata(q, kinds);
+  switch (kind) {
+    case 'film':
+      return [hasTmdb ? tmdb : wd(['film']), aniList];
+    case 'series':
+      return [hasTmdb ? tmdb : tvmaze, aniList];
+    case 'game':
+      return [hasRawg ? rawg : wd(['game'])];
+    case 'book':
+      return [openLibrary];
+    case 'manga':
+      return [aniList];
+    case 'album':
+      return [musicBrainz];
+    default: {
+      const wdKinds: Kind[] = [...(hasTmdb ? [] : (['film'] as Kind[])), ...(hasRawg ? [] : (['game'] as Kind[]))];
+      return [
+        ...(hasTmdb ? [tmdb] : [tvmaze]),
+        ...(wdKinds.length ? [wd(wdKinds)] : []),
+        openLibrary,
+        aniList,
+        ...(hasRawg ? [rawg] : []),
+        musicBrainz,
+      ];
+    }
+  }
+}
 
 export function configured() {
-  return { tmdb: !!process.env.TMDB_API_KEY, rawg: !!process.env.RAWG_API_KEY, openlibrary: true, anilist: true, musicbrainz: true };
+  const tmdbKey = !!process.env.TMDB_API_KEY;
+  const rawgKey = !!process.env.RAWG_API_KEY;
+  return { tmdb: tmdbKey, rawg: rawgKey, tvmaze: !tmdbKey, wikidata: !tmdbKey || !rawgKey, openlibrary: true, anilist: true, musicbrainz: true };
 }
 
 export async function searchWorld(q: string, kind?: Kind): Promise<ExternalItem[]> {
-  const fns = kind ? BY_KIND[kind] : [tmdb, openLibrary, aniList, rawg, musicBrainz];
-  const settled = await Promise.allSettled([...new Set(fns)].map((f) => f(q)));
+  const settled = await Promise.allSettled(sourcesFor(kind).map((f) => f(q)));
   const out: ExternalItem[] = [];
   const seen = new Set<string>();
   // Interleave sources so one archive doesn't drown the others.

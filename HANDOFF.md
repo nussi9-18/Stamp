@@ -3,7 +3,8 @@
 Read this first in a new session. The spec is the original build prompt (STAMP_PROMPT, sections §0–§10 + Appendix A); `README.md` has setup details.
 
 - Repo: `nussi9-18/Stamp`. `main` = `claude/new-session-84z8ky` (Vercel deploys `main`).
-- Live: https://stamp-gilt.vercel.app (website) and `/app` (the app).
+- Live: https://www.stamppassport.app (website) and `/app` (the app). The domain was bought through Vercel (DNS on Vercel); the old stamp-gilt.vercel.app address no longer points anywhere.
+- Vercel project `stamp` (team `lisanfault`), Supabase project `ollqrvvmuhigysawfofy` ("Stamp", us-east-1).
 - Owner's PC: `C:\Users\moham\Projects\Stamp` (Windows, Claude Code at `%USERPROFILE%\.local\bin\claude.exe`, not on PATH).
 - Owner speaks Arabic; reply in Arabic, keep it short and step-by-step (they often use a phone).
 
@@ -49,9 +50,9 @@ Read this first in a new session. The spec is the original build prompt (STAMP_P
 ## To do
 
 **Owner (keys go in Vercel → Settings → Environment Variables, then Redeploy; never in the code/chat)**
-1. Confirm Supabase is set up: all 4 migrations (incl. `20261128000000_shorts.sql`) + `seed.sql` run; Site URL + redirect `https://stamp-gilt.vercel.app/app`; email template with `{{ .Token }}` and `{{ .ConfirmationURL }}` (needs custom SMTP); optional Google/Apple providers.
-2. `TMDB_API_KEY` (films/series), `RAWG_API_KEY` (games; owner has one — put it in Vercel), `ANTHROPIC_API_KEY` (AI tools).
-3. Decide: real TMDB posters vs typographic posters (spec says typographic for copyright); custom domain.
+1. Supabase (checked Nov 28 through the Management API): all 4 migrations are applied and recorded, the catalog is seeded, Site URL and redirects point to www.stamppassport.app, codes are 6 digits. **Still needed: custom SMTP** (Authentication → Emails → SMTP Settings). Until then Supabase only emails the project's own team, 2 an hour. Once SMTP is on, set the Magic link and Confirm signup templates to show `{{ .Token }}` and the `{{ .ConfirmationURL }}` link (Supabase refuses template edits without SMTP on the free plan).
+2. `TMDB_API_KEY` (films/series), `RAWG_API_KEY` (games; owner has one), `ANTHROPIC_API_KEY` (AI tools) are **not set** in Vercel yet. Until they are, films and games come from Wikidata and series from TVmaze (no keys; Wikidata may rate-limit).
+3. Decide: real TMDB posters vs typographic posters (spec says typographic for copyright).
 4. Approve sent shorts in Supabase (`shorts.status` → `live` or `rejected`); check `short_reports` now and then.
 
 **Next prompts** — see NEXT_PROMPTS.md (Prompt 1 is done; start with Prompt 2: real posters + Retro zine style).
